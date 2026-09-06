@@ -1,0 +1,79 @@
+[gd_scene load_steps=4 format=3 uid="uid://b0mdp1main000"]
+
+[ext_resource type="PackedScene" uid="uid://b0mdp1player0" path="res://scenes/player/Player.tscn" id="1_player"]
+
+[sub_resource type="RectangleShape2D" id="RectShape_ground"]
+size = Vector2(640, 32)
+
+[sub_resource type="RectangleShape2D" id="RectShape_plat"]
+size = Vector2(96, 12)
+
+[node name="Main" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(320, 180)
+zoom = Vector2(1, 1)
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(320, 336)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectShape_ground")
+
+[node name="GroundSprite" type="ColorRect" parent="Ground"]
+offset_left = -320.0
+offset_top = -16.0
+offset_right = 320.0
+offset_bottom = 16.0
+color = Color(0.2, 0.22, 0.28, 1)
+
+[node name="Platform1" type="StaticBody2D" parent="."]
+position = Vector2(220, 260)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform1"]
+shape = SubResource("RectShape_plat")
+
+[node name="Sprite" type="ColorRect" parent="Platform1"]
+offset_left = -48.0
+offset_top = -6.0
+offset_right = 48.0
+offset_bottom = 6.0
+color = Color(0.3, 0.32, 0.38, 1)
+
+[node name="Platform2" type="StaticBody2D" parent="."]
+position = Vector2(430, 210)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform2"]
+shape = SubResource("RectShape_plat")
+
+[node name="Sprite" type="ColorRect" parent="Platform2"]
+offset_left = -48.0
+offset_top = -6.0
+offset_right = 48.0
+offset_bottom = 6.0
+color = Color(0.3, 0.32, 0.38, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(80, 280)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 400.0
+offset_bottom = 32.0
+text = "Mundos de Poder — prototipo"
+theme_override_colors/font_color = Color(0.9, 0.85, 0.6, 1)
+
+[node name="Hint" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 28.0
+offset_right = 500.0
+offset_bottom = 52.0
+text = "A/D mover · Espacio saltar · J atacar · Q poder · TAB cambiar"
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
