@@ -4,13 +4,16 @@ extends CharacterBody2D
 ## Q = usar poder, TAB = cambiar poder activo, E = interactuar.
 
 @export var speed: float = 140.0
-@export var jump_velocity: float = -300.0
-@export var gravity: float = 900.0
-@export var max_fall_speed: float = 500.0
+@export var jump_velocity: float = -360.0
+@export var double_jump_velocity: float = -300.0
+@export var max_jumps: int = 2
+@export var gravity: float = 1100.0
+@export var max_fall_speed: float = 520.0
 
 var active_power: int = -1        # id del poder activo (o -1)
 var shield_charges: int = 0        # cargas de escudo pendientes
 var invulnerable_until: float = 0.0
+var jumps_left: int = 0            # saltos restantes en el aire
 
 @onready var sprite: ColorRect = $Sprite
 
@@ -26,14 +29,22 @@ func _physics_process(delta: float) -> void:
 	# Gravedad
 	if not is_on_floor():
 		velocity.y = min(velocity.y + gravity * delta, max_fall_speed)
+	else:
+		# Al tocar suelo recarga los saltos.
+		jumps_left = max_jumps
 
 	# Movimiento horizontal
 	var dir := Input.get_axis("move_left", "move_right")
 	velocity.x = dir * speed
 
-	# Salto
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+	# Salto (con doble salto)
+	if Input.is_action_just_pressed("jump") and jumps_left > 0:
+		# Primer salto = fuerza normal; siguientes = un poco menos.
+		if is_on_floor():
+			velocity.y = jump_velocity
+		else:
+			velocity.y = double_jump_velocity
+		jumps_left -= 1
 
 	# Cambio de poder activo
 	if Input.is_action_just_pressed("cycle_power"):

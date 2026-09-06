@@ -1,21 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://b0mdp1main000"]
+[gd_scene load_steps=5 format=3 uid="uid://b0mdp1main000"]
 
 [ext_resource type="PackedScene" uid="uid://b0mdp1player0" path="res://scenes/player/Player.tscn" id="1_player"]
 
 [sub_resource type="RectangleShape2D" id="RectShape_ground"]
-size = Vector2(640, 32)
+size = Vector2(2400, 32)
 
 [sub_resource type="RectangleShape2D" id="RectShape_plat"]
 size = Vector2(96, 12)
 
+[sub_resource type="RectangleShape2D" id="RectShape_wall"]
+size = Vector2(16, 400)
+
 [node name="Main" type="Node2D"]
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(320, 180)
-zoom = Vector2(1, 1)
-
 [node name="Ground" type="StaticBody2D" parent="."]
-position = Vector2(320, 336)
+position = Vector2(1200, 336)
 collision_layer = 1
 collision_mask = 0
 
@@ -23,14 +22,22 @@ collision_mask = 0
 shape = SubResource("RectShape_ground")
 
 [node name="GroundSprite" type="ColorRect" parent="Ground"]
-offset_left = -320.0
+offset_left = -1200.0
 offset_top = -16.0
-offset_right = 320.0
+offset_right = 1200.0
 offset_bottom = 16.0
 color = Color(0.2, 0.22, 0.28, 1)
 
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-8, 160)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("RectShape_wall")
+
 [node name="Platform1" type="StaticBody2D" parent="."]
-position = Vector2(220, 260)
+position = Vector2(220, 270)
 collision_layer = 1
 collision_mask = 0
 
@@ -45,7 +52,7 @@ offset_bottom = 6.0
 color = Color(0.3, 0.32, 0.38, 1)
 
 [node name="Platform2" type="StaticBody2D" parent="."]
-position = Vector2(430, 210)
+position = Vector2(430, 230)
 collision_layer = 1
 collision_mask = 0
 
@@ -59,10 +66,51 @@ offset_right = 48.0
 offset_bottom = 6.0
 color = Color(0.3, 0.32, 0.38, 1)
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(80, 280)
+[node name="Platform3" type="StaticBody2D" parent="."]
+position = Vector2(640, 200)
+collision_layer = 1
+collision_mask = 0
 
-[node name="Title" type="Label" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform3"]
+shape = SubResource("RectShape_plat")
+
+[node name="Sprite" type="ColorRect" parent="Platform3"]
+offset_left = -48.0
+offset_top = -6.0
+offset_right = 48.0
+offset_bottom = 6.0
+color = Color(0.3, 0.32, 0.38, 1)
+
+[node name="Platform4" type="StaticBody2D" parent="."]
+position = Vector2(880, 250)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform4"]
+shape = SubResource("RectShape_plat")
+
+[node name="Sprite" type="ColorRect" parent="Platform4"]
+offset_left = -48.0
+offset_top = -6.0
+offset_right = 48.0
+offset_bottom = 6.0
+color = Color(0.3, 0.32, 0.38, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(80, 300)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(1, 1)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+limit_left = 0
+limit_top = 0
+limit_right = 2400
+limit_bottom = 360
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Title" type="Label" parent="UI"]
 offset_left = 16.0
 offset_top = 8.0
 offset_right = 400.0
@@ -70,10 +118,10 @@ offset_bottom = 32.0
 text = "Mundos de Poder — prototipo"
 theme_override_colors/font_color = Color(0.9, 0.85, 0.6, 1)
 
-[node name="Hint" type="Label" parent="."]
+[node name="Hint" type="Label" parent="UI"]
 offset_left = 16.0
 offset_top = 28.0
-offset_right = 500.0
+offset_right = 620.0
 offset_bottom = 52.0
-text = "A/D mover · Espacio saltar · J atacar · Q poder · TAB cambiar"
+text = "A/D mover · Espacio saltar (doble!) · J atacar · Q poder · TAB cambiar"
 theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
