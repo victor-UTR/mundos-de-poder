@@ -102,5 +102,12 @@ func load_game() -> void:
 	backpack.clear()
 	for p in bp:
 		backpack.append(int(p))
-	gifts = parsed.get("gifts", [])
-	levels_completed = parsed.get("levels_completed", [])
+	var raw_gifts: Array = parsed.get("gifts", [])
+	gifts.clear()
+	for g in raw_gifts:
+		if typeof(g) == TYPE_DICTIONARY:
+			gifts.append(g)
+	var raw_lvls: Array = parsed.get("levels_completed", [])
+	levels_completed.clear()
+	for l in raw_lvls:
+		levels_completed.append(int(l))

@@ -1,9 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://b0mdp1player0"]
+[gd_scene load_steps=4 format=3 uid="uid://b0mdp1player0"]
 
 [ext_resource type="Script" path="res://scripts/player/Player.gd" id="1_player"]
 
 [sub_resource type="RectangleShape2D" id="RectShape_player"]
 size = Vector2(16, 24)
+
+[sub_resource type="RectangleShape2D" id="RectShape_hitbox"]
+size = Vector2(20, 20)
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
@@ -19,3 +22,22 @@ offset_top = -12.0
 offset_right = 8.0
 offset_bottom = 12.0
 color = Color(0.95, 0.85, 0.4, 1)
+
+[node name="Hitbox" type="Area2D" parent="."]
+position = Vector2(14, 0)
+collision_layer = 8
+collision_mask = 4
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectShape_hitbox")
+disabled = true
+
+[node name="Sprite" type="ColorRect" parent="Hitbox"]
+visible = false
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+color = Color(1, 0.95, 0.4, 0.55)
