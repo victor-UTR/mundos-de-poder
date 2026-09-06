@@ -63,6 +63,7 @@ func stun(duration: float) -> void:
 
 func _die() -> void:
 	is_dead = true
+	Audio.play("enemy_death")
 	# Drop de poder si toca, si no puntos.
 	if power_drop != -1 and not GameState.has_power(power_drop):
 		GameState.add_power(power_drop)
@@ -76,7 +77,7 @@ func _check_contact_damage() -> void:
 		var col := get_slide_collision(i)
 		var collider := col.get_collider()
 		if collider and collider.is_in_group("player") and collider.has_method("take_damage"):
-			collider.take_damage(contact_damage)
+			collider.take_damage(contact_damage, global_position)
 
 
 func _flash(c: Color) -> void:

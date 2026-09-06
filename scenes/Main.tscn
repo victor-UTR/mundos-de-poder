@@ -1,8 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://b0mdp1main000"]
+[gd_scene load_steps=8 format=3 uid="uid://b0mdp1main000"]
 
 [ext_resource type="PackedScene" uid="uid://b0mdp1player0" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://b0mdp1robotesc0" path="res://scenes/enemies/RobotEscaner.tscn" id="2_esc"]
 [ext_resource type="PackedScene" uid="uid://b0mdp1hud000" path="res://scenes/ui/HUD.tscn" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1robottor0" path="res://scenes/enemies/RobotTorreta.tscn" id="4_tor"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1robotsir0" path="res://scenes/enemies/RobotSirena.tscn" id="5_sir"]
 
 [sub_resource type="RectangleShape2D" id="RectShape_ground"]
 size = Vector2(2400, 32)
@@ -15,7 +17,7 @@ size = Vector2(16, 400)
 
 [node name="Main" type="Node2D"]
 
-[node name="Ground" type="StaticBody2D" parent="."]
+[node name="Ground" type="StaticBody2D" parent="." groups=["world"]]
 position = Vector2(1200, 336)
 collision_layer = 1
 collision_mask = 0
@@ -103,6 +105,12 @@ position = Vector2(500, 304)
 
 [node name="RobotEscaner2" parent="." instance=ExtResource("2_esc")]
 position = Vector2(1100, 304)
+
+[node name="RobotTorreta1" parent="." instance=ExtResource("4_tor")]
+position = Vector2(1500, 306)
+
+[node name="RobotSirena1" parent="." instance=ExtResource("5_sir")]
+position = Vector2(1850, 305)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(80, 300)

@@ -8,28 +8,57 @@ script = ExtResource("1_hud")
 [node name="Root" type="Control" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+focus_mode = 0
 mouse_filter = 2
 
-[node name="TopLeft" type="MarginContainer" parent="Root"]
+[node name="TopLeft" type="VBoxContainer" parent="Root"]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 200.0
-offset_bottom = 40.0
+offset_right = 240.0
+offset_bottom = 60.0
+focus_mode = 0
+mouse_filter = 2
+theme_override_constants/separation = 4
 
 [node name="Lives" type="HBoxContainer" parent="Root/TopLeft"]
+focus_mode = 0
+mouse_filter = 2
 theme_override_constants/separation = 4
 
 [node name="Life1" type="ColorRect" parent="Root/TopLeft/Lives"]
 custom_minimum_size = Vector2(16, 16)
+focus_mode = 0
+mouse_filter = 2
 color = Color(0.95, 0.3, 0.3, 1)
 
 [node name="Life2" type="ColorRect" parent="Root/TopLeft/Lives"]
 custom_minimum_size = Vector2(16, 16)
+focus_mode = 0
+mouse_filter = 2
 color = Color(0.95, 0.3, 0.3, 1)
 
 [node name="Life3" type="ColorRect" parent="Root/TopLeft/Lives"]
 custom_minimum_size = Vector2(16, 16)
+focus_mode = 0
+mouse_filter = 2
 color = Color(0.95, 0.3, 0.3, 1)
+
+[node name="HitPips" type="HBoxContainer" parent="Root/TopLeft"]
+focus_mode = 0
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="Pip1" type="ColorRect" parent="Root/TopLeft/HitPips"]
+custom_minimum_size = Vector2(10, 6)
+focus_mode = 0
+mouse_filter = 2
+color = Color(1, 0.9, 0.3, 1)
+
+[node name="Pip2" type="ColorRect" parent="Root/TopLeft/HitPips"]
+custom_minimum_size = Vector2(10, 6)
+focus_mode = 0
+mouse_filter = 2
+color = Color(1, 0.9, 0.3, 1)
 
 [node name="TopRight" type="MarginContainer" parent="Root"]
 anchor_left = 1.0
@@ -38,8 +67,12 @@ offset_left = -160.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = 32.0
+focus_mode = 0
+mouse_filter = 2
 
 [node name="Score" type="Label" parent="Root/TopRight"]
+focus_mode = 0
+mouse_filter = 2
 text = "Puntos: 0"
 horizontal_alignment = 2
 theme_override_colors/font_color = Color(0.95, 0.9, 0.7, 1)
@@ -51,15 +84,47 @@ offset_left = 8.0
 offset_top = -28.0
 offset_right = 600.0
 offset_bottom = -8.0
+focus_mode = 0
+mouse_filter = 2
 theme_override_constants/separation = 6
 
 [node name="PowerDot" type="ColorRect" parent="Root/BottomLeft"]
 custom_minimum_size = Vector2(14, 14)
+focus_mode = 0
+mouse_filter = 2
 color = Color(0.3, 0.3, 0.35, 1)
 
 [node name="PowerName" type="Label" parent="Root/BottomLeft"]
+focus_mode = 0
+mouse_filter = 2
 text = "Poder: —"
 theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+
+[node name="ShieldBadge" type="Panel" parent="Root/BottomLeft"]
+visible = false
+custom_minimum_size = Vector2(58, 20)
+focus_mode = 0
+mouse_filter = 2
+self_modulate = Color(0.2, 0.55, 0.9, 0.85)
+
+[node name="Icon" type="ColorRect" parent="Root/BottomLeft/ShieldBadge"]
+offset_left = 4.0
+offset_top = 3.0
+offset_right = 18.0
+offset_bottom = 17.0
+focus_mode = 0
+mouse_filter = 2
+color = Color(0.55, 0.85, 1, 1)
+
+[node name="Count" type="Label" parent="Root/BottomLeft/ShieldBadge"]
+offset_left = 22.0
+offset_top = 1.0
+offset_right = 56.0
+offset_bottom = 19.0
+focus_mode = 0
+mouse_filter = 2
+text = "x0"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="Toast" type="Label" parent="Root"]
 anchor_left = 0.5
@@ -69,6 +134,8 @@ anchor_bottom = 0.25
 offset_left = -160.0
 offset_right = 160.0
 offset_bottom = 32.0
+focus_mode = 0
+mouse_filter = 2
 text = ""
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 1, 0.55, 1)
