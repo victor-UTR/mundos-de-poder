@@ -16,6 +16,7 @@ Publicado en GitHub Pages: `https://victor-utr.github.io/mundos-de-poder/`
 - `Q`: usar poder activo
 - `TAB`: cambiar de poder activo
 - `1` / `2` / `3`: seleccionar poder por ranura
+- `I`: abrir la mochila (pausa el juego)
 - `E`: interactuar
 
 Atajos de depuración: `F10` reinicia la partida, `F11` borra el guardado,

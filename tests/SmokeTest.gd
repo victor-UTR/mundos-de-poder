@@ -1,12 +1,12 @@
-﻿extends Node
+extends Node
 ## Prueba de humo del Nivel 1. Se ejecuta en headless:
 ##
 ##   godot --headless --path . res://tests/SmokeTest.tscn
 ##
-## Monta cada pantalla en el Ã¡rbol y comprueba lo que el editor no avisa:
-## que el suelo se genera, que el Player aterriza en un marcador vÃ¡lido y,
+## Monta cada pantalla en el árbol y comprueba lo que el editor no avisa:
+## que el suelo se genera, que el Player aterriza en un marcador válido y,
 ## sobre todo, que cada puerta apunta a un marcador que existe de verdad en
-## la pantalla destino (un typo ahÃ­ deja al jugador tirado en el vacÃ­o).
+## la pantalla destino (un typo ahí deja al jugador tirado en el vacío).
 
 var failures: Array[String] = []
 var checks: int = 0
@@ -34,7 +34,13 @@ func _ready() -> void:
 		var idx := i + 1
 		await _check_doors(idx, LevelManager.SCREENS[i], spawns_by_screen)
 
-	# 3) El puzzle final se puede resolver (y sÃ³lo usando los poderes).
+	# 3) Cada robot suelta el poder que le toca y se le puede pegar.
+	await _check_enemy_drops()
+
+	# 4) La vista de mochila lista los 3 poderes y pausa el juego.
+	await _check_inventory()
+
+	# 5) El puzzle final se puede resolver (y sólo usando los poderes).
 	await _check_puzzle()
 
 	# Deja que se procesen los queue_free() pendientes antes de salir; si no,
@@ -66,9 +72,100 @@ func _restore_save() -> void:
 		DirAccess.remove_absolute(GameState.SAVE_PATH)
 
 
+## Cada robot debe soltar su poder al morir y debe ser alcanzable con el
+## ataque cuerpo a cuerpo. Si un solo robot falla aquí, su poder se vuelve
+## inconseguible y el puzzle final queda bloqueado.
+func _check_enemy_drops() -> void:
+	var cases := [
+		{"path": "res://scenes/enemies/RobotEscaner.tscn", "power": GameState.Power.VISION},
+		{"path": "res://scenes/enemies/RobotTorreta.tscn", "power": GameState.Power.SHIELD},
+		{"path": "res://scenes/enemies/RobotSirena.tscn", "power": GameState.Power.EMP},
+	]
+
+	var packed: PackedScene = load("res://scenes/levels/Screen1.tscn")
+	LevelManager.pending_spawn = "start"
+	var screen: Node = packed.instantiate()
+	add_child(screen)
+	await get_tree().process_frame
+	var player := screen.get_node_or_null("Player")
+
+	for c in cases:
+		var scene: PackedScene = load(c["path"])
+		if scene == null:
+			_fail("No se pudo cargar %s" % c["path"])
+			continue
+		var expected: int = c["power"]
+		var power_label: String = GameState.power_name(expected)
+
+		# a) ¿Está configurado para soltar el poder correcto?
+		var probe = scene.instantiate()
+		screen.add_child(probe)
+		await get_tree().process_frame
+		_ok(probe.power_drop == expected,
+			"%s: power_drop es %d, deberia ser %d (%s)" % [
+				probe.name, probe.power_drop, expected, power_label])
+
+		# b) ¿El ataque del jugador le alcanza?
+		# Hacen falta los dos frames: el de proceso para que se aplique la
+		# posición y el de física para que el cuerpo entre en el espacio de
+		# colisiones. Con uno solo, el primer robot aún no está registrado y
+		# el ataque falla por un motivo que no es del juego.
+		probe.global_position = player.global_position + Vector2(12, 0)
+		await get_tree().process_frame
+		await get_tree().physics_frame
+		var hp_before: int = probe.hp
+		player._start_attack(Time.get_ticks_msec() / 1000.0)
+		await get_tree().process_frame
+		_ok(probe.hp < hp_before,
+			"%s: el ataque cuerpo a cuerpo no le hace daño (hp %d)" % [
+				probe.name, probe.hp])
+
+		# c) ¿Al morir entrega el poder?
+		GameState.backpack.clear()
+		probe.take_damage(99)
+		await get_tree().process_frame
+		_ok(GameState.has_power(expected),
+			"%s: al morir no entregó %s (mochila: %s)" % [
+				probe.name, power_label, str(GameState.backpack)])
+
+	remove_child(screen)
+	screen.queue_free()
+
+
+## La mochila debe listar los 3 poderes (tengas o no cada uno) y congelar
+## el juego mientras está abierta.
+func _check_inventory() -> void:
+	var packed: PackedScene = load("res://scenes/levels/Screen1.tscn")
+	LevelManager.pending_spawn = "start"
+	var screen: Node = packed.instantiate()
+	add_child(screen)
+	await get_tree().process_frame
+
+	var inv := screen.get_node_or_null("HUD/Root/Inventory")
+	if inv == null:
+		_fail("El HUD no incluye la vista de mochila")
+		remove_child(screen)
+		screen.queue_free()
+		return
+
+	GameState.backpack.clear()
+	GameState.add_power(GameState.Power.VISION)
+	inv.open()
+	await get_tree().process_frame
+	_ok(inv.list.get_child_count() == 3,
+		"La mochila muestra %d poderes, deberia mostrar los 3 del catálogo"
+			% inv.list.get_child_count())
+	_ok(get_tree().paused, "Abrir la mochila no pausó el juego")
+	inv.close()
+	_ok(not get_tree().paused, "Cerrar la mochila no reanudó el juego")
+
+	remove_child(screen)
+	screen.queue_free()
+
+
 ## Monta el Empire State y comprueba que cada servidor exige de verdad que
 ## se use su poder: primero intenta apagarlo sin usarlo (debe negarse) y
-## despuÃ©s cumpliendo la condiciÃ³n (debe apagarse).
+## después cumpliendo la condición (debe apagarse).
 func _check_puzzle() -> void:
 	var packed: PackedScene = load("res://scenes/levels/Screen5.tscn")
 	if packed == null:
@@ -91,9 +188,9 @@ func _check_puzzle() -> void:
 		s._player = player
 		s._try_disable(now)
 		_ok(not s.is_off,
-			"%s se apagÃ³ sin usar el poder (deberÃ­a exigirlo)" % s.title)
+			"%s se apagó sin usar el poder (debería exigirlo)" % s.title)
 
-	# Ahora cumpliendo la condiciÃ³n de cada uno.
+	# Ahora cumpliendo la condición de cada uno.
 	for s in servers:
 		match s.required_power:
 			GameState.Power.VISION:
@@ -103,25 +200,25 @@ func _check_puzzle() -> void:
 			GameState.Power.SHIELD:
 				player.shield_charges = 1
 		s._try_disable(Time.get_ticks_msec() / 1000.0)
-		_ok(s.is_off, "%s no se apagÃ³ pese a cumplir su condiciÃ³n" % s.title)
+		_ok(s.is_off, "%s no se apagó pese a cumplir su condición" % s.title)
 
 	await get_tree().process_frame
 	_ok(GameState.levels_completed.has(1),
-		"Apagados los 3 servidores, el Nivel 1 no quedÃ³ marcado como completado")
+		"Apagados los 3 servidores, el Nivel 1 no quedó marcado como completado")
 
-	# Ida y vuelta del cÃ³digo, con acentos en el nombre para asegurar que el
+	# Ida y vuelta del código, con acentos en el nombre para asegurar que el
 	# UTF-8 sobrevive al base64.
-	var code := ShareCode.encode("MartÃ­n", GameState.backpack)
+	var code := ShareCode.encode("Martín", GameState.backpack)
 	var decoded := ShareCode.decode(code)
 	_ok(decoded.get("ok", false),
-		"El cÃ³digo de compartir no se pudo decodificar: %s" % code)
-	_ok(String(decoded.get("from", "")) == "MartÃ­n",
-		"El cÃ³digo no conserva el nombre: '%s'" % decoded.get("from", ""))
+		"El código de compartir no se pudo decodificar: %s" % code)
+	_ok(String(decoded.get("from", "")) == "Martín",
+		"El código no conserva el nombre: '%s'" % decoded.get("from", ""))
 	_ok(decoded.get("powers", []).size() == 3,
-		"El cÃ³digo no conserva los 3 poderes")
+		"El código no conserva los 3 poderes")
 	var gift: int = ShareCode.pick_gift(decoded)
 	_ok(gift in GameState.backpack,
-		"El regalo sorteado (%d) no estÃ¡ en la mochila del emisor" % gift)
+		"El regalo sorteado (%d) no está en la mochila del emisor" % gift)
 
 	remove_child(screen)
 	screen.queue_free()
@@ -147,20 +244,20 @@ func _check_screen(idx: int, path: String) -> Array:
 		for c in spawns.get_children():
 			if c is Marker2D:
 				spawn_names.append(c.name)
-		_ok(not spawn_names.is_empty(), "Pantalla %d: Spawns vacÃ­o" % idx)
+		_ok(not spawn_names.is_empty(), "Pantalla %d: Spawns vacío" % idx)
 
-	# El suelo lo genera LevelScreen.gd en tiempo de ejecuciÃ³n.
+	# El suelo lo genera LevelScreen.gd en tiempo de ejecución.
 	var ground := screen.get_node_or_null("Ground")
 	if ground == null:
-		_fail("Pantalla %d: no se generÃ³ el suelo" % idx)
+		_fail("Pantalla %d: no se generó el suelo" % idx)
 	else:
 		var shapes := 0
 		for c in ground.get_children():
 			if c is CollisionShape2D:
 				shapes += 1
-		_ok(shapes > 0, "Pantalla %d: el suelo no tiene colisiÃ³n" % idx)
+		_ok(shapes > 0, "Pantalla %d: el suelo no tiene colisión" % idx)
 		# N huecos interiores parten el suelo en N+1 tramos. Si esto falla,
-		# los pozos se han rellenado y el puzzle de VisiÃ³n serÃ­a trivial.
+		# los pozos se han rellenado y el puzzle de Visión sería trivial.
 		var expected: int = screen.gaps.size() + 1
 		_ok(shapes == expected,
 			"Pantalla %d: el suelo tiene %d tramos, se esperaban %d (%d hueco/s)"
@@ -172,9 +269,9 @@ func _check_screen(idx: int, path: String) -> Array:
 		_fail("Pantalla %d: falta el Player" % idx)
 	else:
 		_ok(player.global_position != Vector2.ZERO,
-			"Pantalla %d: el Player se quedÃ³ en (0,0)" % idx)
+			"Pantalla %d: el Player se quedó en (0,0)" % idx)
 		_ok(player.global_position.y < screen.FALL_LIMIT,
-			"Pantalla %d: el Player aparece por debajo del lÃ­mite de caÃ­da" % idx)
+			"Pantalla %d: el Player aparece por debajo del límite de caída" % idx)
 
 	remove_child(screen)
 	screen.queue_free()

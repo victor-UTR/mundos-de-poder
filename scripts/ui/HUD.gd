@@ -12,11 +12,8 @@ extends CanvasLayer
 @onready var shield_label: Label = $Root/BottomLeft/ShieldBadge/Count
 @onready var toast_label: Label = $Root/Toast
 
-const POWER_COLORS := {
-	1: Color(0.55, 0.85, 1.0),   # Visión (azul claro)
-	2: Color(0.4, 0.9, 0.5),     # Escudo (verde)
-	3: Color(1.0, 0.85, 0.3),    # EMP (amarillo)
-}
+## Los colores viven en GameState.POWER_INFO para que el HUD y la vista de
+## mochila no se desincronicen.
 
 
 func _ready() -> void:
@@ -56,7 +53,7 @@ func _refresh_slots(active_power: int) -> void:
 	for i in slots.get_child_count():
 		var slot: ColorRect = slots.get_child(i)
 		var power_id := i + 1
-		var base: Color = POWER_COLORS.get(power_id, Color.WHITE)
+		var base: Color = GameState.power_color(power_id)
 		if not GameState.has_power(power_id):
 			slot.color = Color(0.22, 0.22, 0.26)
 		elif power_id == active_power:
@@ -84,7 +81,7 @@ func _on_active_power_changed(power_id: int) -> void:
 	var info: Dictionary = GameState.POWER_INFO.get(power_id, {"name": "?"})
 	power_label.text = "Poder: %s (%d/3)   Q usar · TAB cambiar" % [
 		info["name"], GameState.backpack.size()]
-	power_dot.color = POWER_COLORS.get(power_id, Color.WHITE)
+	power_dot.color = GameState.power_color(power_id)
 
 
 func _on_power_collected(power_id: int) -> void:

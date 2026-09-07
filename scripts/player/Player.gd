@@ -253,6 +253,12 @@ func _cycle_power() -> void:
 	Audio.play_ui_switch()
 
 
+## Selección de poder desde fuera (la vista de mochila, con el juego en
+## pausa y el Player sin procesar input).
+func select_power_slot(slot: int) -> void:
+	_select_power_by_slot(slot)
+
+
 func _select_power_by_slot(slot: int) -> void:
 	if slot < 0 or slot >= GameState.backpack.size():
 		return

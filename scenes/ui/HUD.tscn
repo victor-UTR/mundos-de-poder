@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0mdp1hud000"]
+[gd_scene load_steps=3 format=3 uid="uid://b0mdp1hud000"]
 
 [ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Inventory.tscn" id="2_inv"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -163,3 +164,5 @@ text = ""
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 1, 0.55, 1)
 theme_override_font_sizes/font_size = 20
+
+[node name="Inventory" parent="Root" instance=ExtResource("2_inv")]

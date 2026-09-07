@@ -12,10 +12,40 @@ const SAVE_VERSION := 1
 enum Power { VISION = 1, SHIELD = 2, EMP = 3 }
 
 const POWER_INFO := {
-	Power.VISION: {"name": "Visión", "desc": "Revela plataformas y botones ocultos.", "level": 1},
-	Power.SHIELD: {"name": "Escudo", "desc": "Bloquea el próximo golpe recibido.", "level": 1},
-	Power.EMP:    {"name": "Pulso EMP", "desc": "Aturde a los enemigos cercanos 2 segundos.", "level": 1},
+	Power.VISION: {
+		"name": "Visión", "level": 1,
+		"desc": "Revela plataformas y botones ocultos.",
+		"source": "Robot-Escáner",
+		"color": Color(0.55, 0.85, 1.0),
+	},
+	Power.SHIELD: {
+		"name": "Escudo", "level": 1,
+		"desc": "Bloquea el próximo golpe recibido.",
+		"source": "Robot-Torreta",
+		"color": Color(0.4, 0.9, 0.5),
+	},
+	Power.EMP: {
+		"name": "Pulso EMP", "level": 1,
+		"desc": "Aturde a los enemigos cercanos 2 segundos.",
+		"source": "Robot-Sirena",
+		"color": Color(1.0, 0.85, 0.3),
+	},
 }
+
+## Orden estable de los poderes, para pintarlos siempre igual en la interfaz.
+const POWER_ORDER := [Power.VISION, Power.SHIELD, Power.EMP]
+
+
+## Color del poder, o gris si no existe.
+func power_color(power_id: int) -> Color:
+	var info: Dictionary = POWER_INFO.get(power_id, {})
+	return info.get("color", Color(0.6, 0.6, 0.65))
+
+
+## Nombre del poder, o "?" si no existe.
+func power_name(power_id: int) -> String:
+	var info: Dictionary = POWER_INFO.get(power_id, {"name": "?"})
+	return info["name"]
 
 # --- Estado en memoria -----------------------------------------------------
 var player_name: String = ""
