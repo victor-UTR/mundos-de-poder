@@ -4,9 +4,13 @@ extends Node
 ## por WhatsApp; el receptor lo pega y recibe 1 poder aleatorio de esa
 ## mochila marcado como "regalo".
 ##
-## Formato interno (JSON compacto → base64url → grupos de 4 con guiones):
+## Formato interno (JSON compacto → base64 → grupos de 4 con guiones):
 ##   {"v":1,"n":"Nombre","p":[1,2,3]}
 ## Prefijo visible: "MDP1-" (Mundos de Poder v1) para reconocer al pegar.
+##
+## El "+" de base64 se escribe "." y el "/" se escribe "_". Ojo: NO se usa
+## el "-" de base64url, porque el guion ya separa los grupos y al quitarlo
+## al decodificar se llevaría por delante los datos.
 
 const PREFIX := "MDP1-"
 
@@ -19,18 +23,19 @@ func encode(player_name: String, powers: Array) -> String:
 	}
 	var json := JSON.stringify(payload)
 	var b64 := Marshalls.utf8_to_base64(json)
-	# base64url-safe
-	b64 = b64.replace("+", "-").replace("/", "_").replace("=", "")
+	b64 = b64.replace("+", ".").replace("/", "_").replace("=", "")
 	return PREFIX + _group(b64, 4)
 
 
 func decode(code: String) -> Dictionary:
-	var clean := code.strip_edges().to_upper().replace(" ", "")
-	if not clean.begins_with(PREFIX):
+	# Sin to_upper(): base64 distingue mayúsculas de minúsculas y pasarlo
+	# todo a mayúsculas destruía el contenido.
+	var clean := code.strip_edges().replace(" ", "")
+	if not clean.to_upper().begins_with(PREFIX):
 		return {"ok": false, "error": "Código no reconocido"}
 	var body := clean.substr(PREFIX.length()).replace("-", "")
 	# volver a base64 estándar
-	body = body.replace("_", "/").replace("-", "+")
+	body = body.replace(".", "+").replace("_", "/")
 	# padding
 	while body.length() % 4 != 0:
 		body += "="
@@ -66,9 +71,6 @@ func _group(s: String, n: int) -> String:
 		if i > 0:
 			out += "-"
 		out += s.substr(i, n)
-	# limitar a 5 grupos máximo para no ser un tocho
-	var parts := out.split("-")
-	if parts.size() > 5:
-		parts.resize(5)
-		out = "-".join(parts)
+	# Aquí antes se recortaba a 5 grupos "para no ser un tocho": eso tiraba
+	# la mitad del payload y ningún código podía decodificarse jamás.
 	return out

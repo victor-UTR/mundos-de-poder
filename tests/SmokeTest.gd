@@ -1,19 +1,26 @@
-extends Node
+﻿extends Node
 ## Prueba de humo del Nivel 1. Se ejecuta en headless:
 ##
 ##   godot --headless --path . res://tests/SmokeTest.tscn
 ##
-## Monta cada pantalla en el árbol y comprueba lo que el editor no avisa:
-## que el suelo se genera, que el Player aterriza en un marcador válido y,
+## Monta cada pantalla en el Ã¡rbol y comprueba lo que el editor no avisa:
+## que el suelo se genera, que el Player aterriza en un marcador vÃ¡lido y,
 ## sobre todo, que cada puerta apunta a un marcador que existe de verdad en
-## la pantalla destino (un typo ahí deja al jugador tirado en el vacío).
+## la pantalla destino (un typo ahÃ­ deja al jugador tirado en el vacÃ­o).
 
 var failures: Array[String] = []
 var checks: int = 0
 
+## El test escribe en GameState (poderes, puntos, nivel completado) y eso
+## persiste en user://savegame.json. Se guarda una copia al empezar y se
+## restaura al terminar para no destruir la partida de quien lo ejecute.
+var _save_backup: String = ""
+var _had_save: bool = false
+
 
 func _ready() -> void:
 	await get_tree().process_frame
+	_backup_save()
 
 	# 1) Todas las pantallas cargan e informan de sus marcadores.
 	var spawns_by_screen := {}
@@ -27,7 +34,97 @@ func _ready() -> void:
 		var idx := i + 1
 		await _check_doors(idx, LevelManager.SCREENS[i], spawns_by_screen)
 
+	# 3) El puzzle final se puede resolver (y sÃ³lo usando los poderes).
+	await _check_puzzle()
+
+	# Deja que se procesen los queue_free() pendientes antes de salir; si no,
+	# Godot avisa de instancias filtradas y de corrutinas del Player
+	# reanudadas sobre objetos ya liberados.
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	_restore_save()
 	_report()
+
+
+func _backup_save() -> void:
+	_had_save = FileAccess.file_exists(GameState.SAVE_PATH)
+	if _had_save:
+		var f := FileAccess.open(GameState.SAVE_PATH, FileAccess.READ)
+		if f:
+			_save_backup = f.get_as_text()
+			f.close()
+
+
+func _restore_save() -> void:
+	if _had_save:
+		var f := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
+		if f:
+			f.store_string(_save_backup)
+			f.close()
+	elif FileAccess.file_exists(GameState.SAVE_PATH):
+		DirAccess.remove_absolute(GameState.SAVE_PATH)
+
+
+## Monta el Empire State y comprueba que cada servidor exige de verdad que
+## se use su poder: primero intenta apagarlo sin usarlo (debe negarse) y
+## despuÃ©s cumpliendo la condiciÃ³n (debe apagarse).
+func _check_puzzle() -> void:
+	var packed: PackedScene = load("res://scenes/levels/Screen5.tscn")
+	if packed == null:
+		_fail("No se pudo cargar la pantalla 5")
+		return
+	LevelManager.pending_spawn = "from_left"
+	var screen: Node = packed.instantiate()
+	add_child(screen)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var player := screen.get_node_or_null("Player")
+	var servers := get_tree().get_nodes_in_group("servers")
+	_ok(servers.size() == 3, "El Empire State tiene %d servidores, esperaba 3" % servers.size())
+
+	# Con la mochila completa, pero sin usar los poderes, nada debe ceder.
+	GameState.backpack = [1, 2, 3]
+	var now := Time.get_ticks_msec() / 1000.0
+	for s in servers:
+		s._player = player
+		s._try_disable(now)
+		_ok(not s.is_off,
+			"%s se apagÃ³ sin usar el poder (deberÃ­a exigirlo)" % s.title)
+
+	# Ahora cumpliendo la condiciÃ³n de cada uno.
+	for s in servers:
+		match s.required_power:
+			GameState.Power.VISION:
+				s.reveal(6.0)
+			GameState.Power.EMP:
+				s.stun(2.0)
+			GameState.Power.SHIELD:
+				player.shield_charges = 1
+		s._try_disable(Time.get_ticks_msec() / 1000.0)
+		_ok(s.is_off, "%s no se apagÃ³ pese a cumplir su condiciÃ³n" % s.title)
+
+	await get_tree().process_frame
+	_ok(GameState.levels_completed.has(1),
+		"Apagados los 3 servidores, el Nivel 1 no quedÃ³ marcado como completado")
+
+	# Ida y vuelta del cÃ³digo, con acentos en el nombre para asegurar que el
+	# UTF-8 sobrevive al base64.
+	var code := ShareCode.encode("MartÃ­n", GameState.backpack)
+	var decoded := ShareCode.decode(code)
+	_ok(decoded.get("ok", false),
+		"El cÃ³digo de compartir no se pudo decodificar: %s" % code)
+	_ok(String(decoded.get("from", "")) == "MartÃ­n",
+		"El cÃ³digo no conserva el nombre: '%s'" % decoded.get("from", ""))
+	_ok(decoded.get("powers", []).size() == 3,
+		"El cÃ³digo no conserva los 3 poderes")
+	var gift: int = ShareCode.pick_gift(decoded)
+	_ok(gift in GameState.backpack,
+		"El regalo sorteado (%d) no estÃ¡ en la mochila del emisor" % gift)
+
+	remove_child(screen)
+	screen.queue_free()
 
 
 func _check_screen(idx: int, path: String) -> Array:
@@ -50,20 +147,20 @@ func _check_screen(idx: int, path: String) -> Array:
 		for c in spawns.get_children():
 			if c is Marker2D:
 				spawn_names.append(c.name)
-		_ok(not spawn_names.is_empty(), "Pantalla %d: Spawns vacío" % idx)
+		_ok(not spawn_names.is_empty(), "Pantalla %d: Spawns vacÃ­o" % idx)
 
-	# El suelo lo genera LevelScreen.gd en tiempo de ejecución.
+	# El suelo lo genera LevelScreen.gd en tiempo de ejecuciÃ³n.
 	var ground := screen.get_node_or_null("Ground")
 	if ground == null:
-		_fail("Pantalla %d: no se generó el suelo" % idx)
+		_fail("Pantalla %d: no se generÃ³ el suelo" % idx)
 	else:
 		var shapes := 0
 		for c in ground.get_children():
 			if c is CollisionShape2D:
 				shapes += 1
-		_ok(shapes > 0, "Pantalla %d: el suelo no tiene colisión" % idx)
+		_ok(shapes > 0, "Pantalla %d: el suelo no tiene colisiÃ³n" % idx)
 		# N huecos interiores parten el suelo en N+1 tramos. Si esto falla,
-		# los pozos se han rellenado y el puzzle de Visión sería trivial.
+		# los pozos se han rellenado y el puzzle de VisiÃ³n serÃ­a trivial.
 		var expected: int = screen.gaps.size() + 1
 		_ok(shapes == expected,
 			"Pantalla %d: el suelo tiene %d tramos, se esperaban %d (%d hueco/s)"
@@ -75,9 +172,9 @@ func _check_screen(idx: int, path: String) -> Array:
 		_fail("Pantalla %d: falta el Player" % idx)
 	else:
 		_ok(player.global_position != Vector2.ZERO,
-			"Pantalla %d: el Player se quedó en (0,0)" % idx)
+			"Pantalla %d: el Player se quedÃ³ en (0,0)" % idx)
 		_ok(player.global_position.y < screen.FALL_LIMIT,
-			"Pantalla %d: el Player aparece por debajo del límite de caída" % idx)
+			"Pantalla %d: el Player aparece por debajo del lÃ­mite de caÃ­da" % idx)
 
 	remove_child(screen)
 	screen.queue_free()

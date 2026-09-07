@@ -52,6 +52,12 @@ Solo con los 3 poderes activados el datacenter se apaga. Si al llegar
 falta alguno, el juego indica cuál y permite volver a las pantallas
 anteriores.
 
+No basta con llevar el poder en la mochila: hay que **usarlo** (`Q`) y
+después interactuar (`E`). El servidor A sólo acepta la pulsación mientras
+la Visión está activa, el B exige gastar una carga de Escudo (y quema a
+quien se acerca sin ella) y el C sólo cede mientras el EMP lo tiene
+aturdido. La luz de cada servidor se pone verde cuando se puede actuar.
+
 ## Recompensa
 
 - Se marca `Nivel 1` como completado.

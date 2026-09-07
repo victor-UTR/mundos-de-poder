@@ -297,15 +297,28 @@ func _update_shield_aura() -> void:
 
 
 func _emit_emp() -> int:
-	var enemies := get_tree().get_nodes_in_group("enemies")
 	var stunned := 0
-	for e in enemies:
+	# Además de los robots, el EMP afecta a "emp_targets": los servidores
+	# electrificados del Empire State.
+	var targets := get_tree().get_nodes_in_group("enemies")
+	targets.append_array(get_tree().get_nodes_in_group("emp_targets"))
+	for e in targets:
 		if e.global_position.distance_to(global_position) <= 120.0:
 			if e.has_method("stun"):
 				e.stun(2.0)
 				stunned += 1
 	_flash(Color(1.0, 1.0, 0.4))
 	return stunned
+
+
+## Gasta una carga de escudo. Devuelve false si no había ninguna.
+func consume_shield() -> bool:
+	if shield_charges <= 0:
+		return false
+	shield_charges -= 1
+	shield_charges_changed.emit(shield_charges)
+	_update_shield_aura()
+	return true
 
 
 ## Duración de la revelación. Cruzar el pozo de la pantalla 3 lleva unos

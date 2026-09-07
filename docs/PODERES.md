@@ -4,7 +4,7 @@ Los IDs son enteros cortos para que quepan en los códigos de compartir.
 
 | ID | Nombre     | Tecla | Efecto                                                    | Fuente (nivel 1)  |
 |----|------------|-------|-----------------------------------------------------------|-------------------|
-| 1  | Visión     | Q     | Revela plataformas y botones ocultos durante 3 s.         | Robot-Escáner     |
+| 1  | Visión     | Q     | Revela plataformas y botones ocultos durante 6 s.         | Robot-Escáner     |
 | 2  | Escudo     | Q     | Añade 1 carga; bloquea el próximo golpe recibido.         | Robot-Torreta     |
 | 3  | Pulso EMP  | Q     | Aturde enemigos en radio de 120 px durante 2 s.           | Robot-Sirena      |
 

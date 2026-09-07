@@ -20,6 +20,7 @@ const POWER_COLORS := {
 
 
 func _ready() -> void:
+	add_to_group("hud")
 	GameState.lives_changed.connect(_on_lives_changed)
 	GameState.score_changed.connect(_on_score_changed)
 	GameState.power_collected.connect(_on_power_collected)
@@ -111,6 +112,12 @@ func _on_hits_before_life_changed(remaining: int) -> void:
 
 
 var _toast_tween: Tween
+
+
+## Punto de entrada público para que otros nodos (servidores, meta) puedan
+## avisar al jugador sin conocer las tripas del HUD.
+func show_message(msg: String) -> void:
+	_toast(msg)
 
 
 func _toast(msg: String) -> void:
