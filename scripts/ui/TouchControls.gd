@@ -28,6 +28,7 @@ var _finger_action: Dictionary = {}
 ## depurar en un móvil ajeno, donde no hay consola a la que asomarse.
 var _diag: Label
 var _diag_events: int = 0
+var _env_info: String = ""
 
 
 func _ready() -> void:
@@ -54,6 +55,12 @@ func _setup_diag() -> void:
 	_diag.add_theme_font_size_override("font_size", 10)
 	_diag.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))
 	add_child(_diag)
+	# En iOS (y cualquier pantalla Retina) el devicePixelRatio es 2 o 3. Si
+	# las coordenadas del toque llegan multiplicadas por ese factor, caen
+	# fuera de los botones y el personaje no responde.
+	_env_info = str(JavaScriptBridge.eval(
+		"'dpr=' + window.devicePixelRatio + ' css=' + Math.round(window.innerWidth) + 'x' + Math.round(window.innerHeight) + ' ua=' + (navigator.userAgent.match(/iPhone|iPad|Android/) || ['?'])[0]",
+		true))
 	_update_diag("esperando eventos")
 
 
@@ -65,17 +72,43 @@ func _debug_requested() -> bool:
 	return query.find("debug") != -1
 
 
+var _diag_last: String = "esperando eventos"
+
+
+func _process(_delta: float) -> void:
+	_sweep_stuck_actions()
+	# El diagnóstico se refresca cada frame: así se ve si el juego avanza o
+	# está congelado, que es la diferencia entre "no llega la entrada" y "la
+	# entrada llega pero nada se mueve".
+	if _diag:
+		_update_diag(_diag_last)
+
+
 func _update_diag(last_event: String) -> void:
 	if _diag == null:
 		return
-	_diag.text = "DIAG  eventos=%d\nultimo: %s\nvisible=%s  touchscreen=%s\nacciones activas: %s\nviewport=%s" % [
+	_diag_last = last_event
+	var player := get_tree().get_first_node_in_group("player")
+	var player_info := "SIN PLAYER"
+	if player:
+		player_info = "x=%.0f  vel=%.0f" % [
+			player.global_position.x, player.velocity.x]
+	var inv := get_parent().get_node_or_null("Inventory") if get_parent() else null
+	_diag.text = "DIAG ev=%d  frame=%d  PAUSA=%s\nultimo: %s\nL=%s R=%s salto=%s\nplayer: %s\nmochila_abierta=%s\nvisible=%s touch=%s vp=%s\nmantenidas: %s\nentorno: " % [
 		_diag_events,
+		Engine.get_process_frames(),
+		str(get_tree().paused),
 		last_event,
+		str(Input.is_action_pressed("move_left")),
+		str(Input.is_action_pressed("move_right")),
+		str(Input.is_action_pressed("jump")),
+		player_info,
+		str(inv.is_open) if inv else "?",
 		str(visible),
 		str(DisplayServer.is_touchscreen_available()),
-		str(_finger_action.values()),
 		str(get_viewport().get_visible_rect().size),
-	]
+		str(_finger_action.values()),
+	] + _env_info
 
 
 ## Detectar el táctil en el export web es poco de fiar: en Chrome de Android
@@ -167,10 +200,16 @@ func _drag(finger: int, pos: Vector2) -> void:
 		_press(finger, target)
 
 
+## Acciones que ha activado este nodo. Sirve de red de seguridad para no
+## dejar ninguna "pegada", y para no soltar nunca una que venga del teclado.
+var _my_actions: Dictionary = {}
+
+
 func _press(finger: int, action: String) -> void:
 	if action == "":
 		return
 	_finger_action[finger] = action
+	_my_actions[action] = true
 	Input.action_press(action)
 	_set_button_held(action, true)
 
@@ -183,7 +222,24 @@ func _release(finger: int) -> void:
 	# Si otro dedo mantiene la misma acción, no se suelta.
 	if action not in _finger_action.values():
 		Input.action_release(action)
+		_my_actions.erase(action)
 		_set_button_held(action, false)
+
+
+## Si no queda ningún dedo ni el ratón pulsados, ninguna acción nuestra
+## debería seguir activa. En el móvil llegan dos eventos por toque (el dedo
+## y el ratón emulado) y si el soltado se descuadra puede quedarse una
+## pegada: con move_left y move_right activas a la vez el eje se anula y el
+## personaje no se mueve aunque todo lo demás parezca correcto.
+## Sólo se tocan las acciones activadas por estos botones, nunca las del
+## teclado.
+func _sweep_stuck_actions() -> void:
+	if not _finger_action.is_empty() or _my_actions.is_empty():
+		return
+	for action in _my_actions.keys():
+		Input.action_release(action)
+		_set_button_held(action, false)
+	_my_actions.clear()
 
 
 func _release_all() -> void:
