@@ -101,24 +101,31 @@ func _check_enemy_drops() -> void:
 		var probe = scene.instantiate()
 		screen.add_child(probe)
 		await get_tree().process_frame
+		# El nombre hay que guardarlo ya: al morir el robot se libera y
+		# leerlo después revienta con "previously freed".
+		var robot_name: String = probe.name
 		_ok(probe.power_drop == expected,
 			"%s: power_drop es %d, deberia ser %d (%s)" % [
-				probe.name, probe.power_drop, expected, power_label])
+				robot_name, probe.power_drop, expected, power_label])
 
-		# b) ¿El ataque del jugador le alcanza?
-		# Hacen falta los dos frames: el de proceso para que se aplique la
-		# posición y el de física para que el cuerpo entre en el espacio de
-		# colisiones. Con uno solo, el primer robot aún no está registrado y
-		# el ataque falla por un motivo que no es del juego.
-		probe.global_position = player.global_position + Vector2(12, 0)
-		await get_tree().process_frame
-		await get_tree().physics_frame
+		# b) ¿El ataque del jugador le alcanza? El cuerpo tarda un número
+		# indeterminado de frames en registrarse en el espacio de físicas
+		# (en el runner de CI no es el mismo que en local), así que se
+		# reintenta en vez de fijar una espera concreta.
 		var hp_before: int = probe.hp
-		player._start_attack(Time.get_ticks_msec() / 1000.0)
-		await get_tree().process_frame
-		_ok(probe.hp < hp_before,
+		var connected := false
+		for _attempt in 5:
+			probe.global_position = player.global_position + Vector2(12, 0)
+			probe.velocity = Vector2.ZERO
+			await get_tree().physics_frame
+			player._start_attack(Time.get_ticks_msec() / 1000.0)
+			await get_tree().physics_frame
+			if probe.hp < hp_before:
+				connected = true
+				break
+		_ok(connected,
 			"%s: el ataque cuerpo a cuerpo no le hace daño (hp %d)" % [
-				probe.name, probe.hp])
+				robot_name, probe.hp])
 
 		# c) ¿Al morir entrega el poder?
 		GameState.backpack.clear()
@@ -126,7 +133,7 @@ func _check_enemy_drops() -> void:
 		await get_tree().process_frame
 		_ok(GameState.has_power(expected),
 			"%s: al morir no entregó %s (mochila: %s)" % [
-				probe.name, power_label, str(GameState.backpack)])
+				robot_name, power_label, str(GameState.backpack)])
 
 	remove_child(screen)
 	screen.queue_free()
