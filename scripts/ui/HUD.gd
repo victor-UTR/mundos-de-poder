@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var score_label: Label = $Root/TopRight/Score
 @onready var power_label: Label = $Root/BottomLeft/PowerName
 @onready var power_dot: ColorRect = $Root/BottomLeft/PowerDot
+@onready var slots: HBoxContainer = $Root/BottomLeft/Slots
 @onready var shield_badge: Panel = $Root/BottomLeft/ShieldBadge
 @onready var shield_label: Label = $Root/BottomLeft/ShieldBadge/Count
 @onready var toast_label: Label = $Root/Toast
@@ -38,11 +39,29 @@ func _ready() -> void:
 		if p.has_signal("hits_before_life_changed"):
 			p.hits_before_life_changed.connect(_on_hits_before_life_changed)
 			_on_hits_before_life_changed(p._hits_left_this_life)
+		if p.has_signal("notice"):
+			p.notice.connect(_toast)
 
 
 func _refresh_all() -> void:
 	_on_lives_changed(GameState.lives)
 	_on_score_changed(GameState.score)
+	_refresh_slots(-1)
+
+
+## Pinta las 3 ranuras: apagada = aún no tienes ese poder, tenue = lo tienes,
+## encendida = es el activo. Así se ve de un vistazo cuántos llevas.
+func _refresh_slots(active_power: int) -> void:
+	for i in slots.get_child_count():
+		var slot: ColorRect = slots.get_child(i)
+		var power_id := i + 1
+		var base: Color = POWER_COLORS.get(power_id, Color.WHITE)
+		if not GameState.has_power(power_id):
+			slot.color = Color(0.22, 0.22, 0.26)
+		elif power_id == active_power:
+			slot.color = base
+		else:
+			slot.color = Color(base.r, base.g, base.b, 0.4)
 
 
 func _on_lives_changed(n: int) -> void:
@@ -56,18 +75,21 @@ func _on_score_changed(s: int) -> void:
 
 
 func _on_active_power_changed(power_id: int) -> void:
+	_refresh_slots(power_id)
 	if power_id == -1:
-		power_label.text = "Poder: —"
+		power_label.text = "Sin poderes — derrota robots para conseguirlos"
 		power_dot.color = Color(0.3, 0.3, 0.35)
 		return
 	var info: Dictionary = GameState.POWER_INFO.get(power_id, {"name": "?"})
-	power_label.text = "Poder: %s   (Q usar · TAB cambiar)" % info["name"]
+	power_label.text = "Poder: %s (%d/3)   Q usar · TAB cambiar" % [
+		info["name"], GameState.backpack.size()]
 	power_dot.color = POWER_COLORS.get(power_id, Color.WHITE)
 
 
 func _on_power_collected(power_id: int) -> void:
 	var info: Dictionary = GameState.POWER_INFO.get(power_id, {"name": "?"})
-	_toast("¡Nuevo poder: %s!" % info["name"])
+	_toast("¡Nuevo poder: %s! (%d/3)" % [info["name"], GameState.backpack.size()])
+	_refresh_slots(power_id)
 
 
 func _on_shield_charges_changed(n: int) -> void:
@@ -88,9 +110,17 @@ func _on_hits_before_life_changed(remaining: int) -> void:
 		pip.color = Color(1, 0.9, 0.3) if i < remaining else Color(0.3, 0.3, 0.35)
 
 
+var _toast_tween: Tween
+
+
 func _toast(msg: String) -> void:
+	# Ahora los avisos son mucho más frecuentes, así que hay que cancelar el
+	# anterior: si no, dos tweens sobre el mismo Label se pisan y el texto
+	# nuevo se desvanece con el tiempo restante del viejo.
+	if _toast_tween and _toast_tween.is_valid():
+		_toast_tween.kill()
 	toast_label.text = msg
 	toast_label.modulate.a = 1.0
-	var tween := create_tween()
-	tween.tween_interval(1.4)
-	tween.tween_property(toast_label, "modulate:a", 0.0, 0.6)
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(1.4)
+	_toast_tween.tween_property(toast_label, "modulate:a", 0.0, 0.6)

@@ -88,6 +88,29 @@ focus_mode = 0
 mouse_filter = 2
 theme_override_constants/separation = 6
 
+[node name="Slots" type="HBoxContainer" parent="Root/BottomLeft"]
+focus_mode = 0
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="Slot1" type="ColorRect" parent="Root/BottomLeft/Slots"]
+custom_minimum_size = Vector2(12, 12)
+focus_mode = 0
+mouse_filter = 2
+color = Color(0.22, 0.22, 0.26, 1)
+
+[node name="Slot2" type="ColorRect" parent="Root/BottomLeft/Slots"]
+custom_minimum_size = Vector2(12, 12)
+focus_mode = 0
+mouse_filter = 2
+color = Color(0.22, 0.22, 0.26, 1)
+
+[node name="Slot3" type="ColorRect" parent="Root/BottomLeft/Slots"]
+custom_minimum_size = Vector2(12, 12)
+focus_mode = 0
+mouse_filter = 2
+color = Color(0.22, 0.22, 0.26, 1)
+
 [node name="PowerDot" type="ColorRect" parent="Root/BottomLeft"]
 custom_minimum_size = Vector2(14, 14)
 focus_mode = 0

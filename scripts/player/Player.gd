@@ -6,6 +6,9 @@ extends CharacterBody2D
 signal active_power_changed(power_id: int)
 signal shield_charges_changed(n: int)
 signal hits_before_life_changed(remaining: int)
+## Mensaje corto para el HUD. Sin esto, pulsar Q o TAB sin efecto visible
+## parece que el juego está roto (le pasó al primer probador).
+signal notice(msg: String)
 
 @export var speed: float = 140.0
 @export var jump_velocity: float = -360.0
@@ -236,6 +239,12 @@ func _flip_hitbox() -> void:
 # --- Poderes --------------------------------------------------------------
 func _cycle_power() -> void:
 	if GameState.backpack.is_empty():
+		notice.emit("Aún no tienes poderes. ¡Derrota robots!")
+		return
+	# Con un solo poder el ciclo vuelve a él mismo y parece que TAB no va.
+	if GameState.backpack.size() == 1:
+		var only: Dictionary = GameState.POWER_INFO.get(active_power, {"name": "?"})
+		notice.emit("Solo tienes 1 poder: %s" % only["name"])
 		return
 	var idx := GameState.backpack.find(active_power)
 	idx = (idx + 1) % GameState.backpack.size()
@@ -257,6 +266,7 @@ func _select_power_by_slot(slot: int) -> void:
 
 func _use_active_power() -> void:
 	if active_power == -1:
+		notice.emit("Aún no tienes poderes. ¡Derrota robots!")
 		return
 	match active_power:
 		GameState.Power.SHIELD:
@@ -266,10 +276,18 @@ func _use_active_power() -> void:
 			_flash(Color(0.4, 0.8, 1.0))
 			Audio.play_ui_switch()
 		GameState.Power.EMP:
-			_emit_emp()
+			var stunned := _emit_emp()
+			if stunned > 0:
+				notice.emit("¡EMP! %d robot(s) aturdido(s)" % stunned)
+			else:
+				notice.emit("EMP lanzado, pero no hay robots cerca")
 			Audio.play_ui_switch()
 		GameState.Power.VISION:
-			_reveal_hidden()
+			var revealed := _reveal_hidden()
+			if revealed > 0:
+				notice.emit("¡%d plataforma(s) revelada(s)!" % revealed)
+			else:
+				notice.emit("Aquí no hay nada oculto")
 			Audio.play_ui_switch()
 
 
@@ -278,13 +296,16 @@ func _update_shield_aura() -> void:
 		shield_aura.visible = shield_charges > 0
 
 
-func _emit_emp() -> void:
+func _emit_emp() -> int:
 	var enemies := get_tree().get_nodes_in_group("enemies")
+	var stunned := 0
 	for e in enemies:
 		if e.global_position.distance_to(global_position) <= 120.0:
 			if e.has_method("stun"):
 				e.stun(2.0)
+				stunned += 1
 	_flash(Color(1.0, 1.0, 0.4))
+	return stunned
 
 
 ## Duración de la revelación. Cruzar el pozo de la pantalla 3 lleva unos
@@ -292,10 +313,13 @@ func _emit_emp() -> void:
 const VISION_DURATION := 6.0
 
 
-func _reveal_hidden() -> void:
+func _reveal_hidden() -> int:
+	var revealed := 0
 	for h in get_tree().get_nodes_in_group("hidden"):
 		if h.has_method("reveal"):
 			h.reveal(VISION_DURATION)
+			revealed += 1
+	return revealed
 
 
 func _flash(c: Color) -> void:
