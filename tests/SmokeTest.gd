@@ -296,6 +296,42 @@ func _check_touch_controls() -> void:
 		"Un toque en pantalla no hace aparecer los controles ocultos")
 	tc._release_all()
 
+	# d2) De punta a punta: pulsar el botón debe mover al personaje. Las
+	#     comprobaciones anteriores validan la capa de entrada, pero no que
+	#     el Player reaccione, que es lo que el jugador nota.
+	tc.set_controls_visible(true)
+	var player_e2e := screen.get_node_or_null("Player")
+	if player_e2e:
+		var x_before: float = player_e2e.global_position.x
+		tc._press(0, "move_right")
+		for _i in 12:
+			await get_tree().physics_frame
+		tc._release(0)
+		_ok(player_e2e.global_position.x > x_before + 1.0,
+			"Pulsar el botón de mover no desplaza al personaje (x %.1f -> %.1f)" % [
+				x_before, player_e2e.global_position.x])
+
+	# e) Respaldo por ratón: si un navegador móvil no manda eventos de dedo,
+	#    los clics emulados deben servir igual, o el juego se ve pero no se
+	#    puede mover al personaje.
+	tc.set_controls_visible(true)
+	var right_center: Vector2 = tc.get_node("Right").get_global_rect().get_center()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = right_center
+	tc._input(click)
+	_ok(Input.is_action_pressed("move_right"),
+		"Un clic sobre el botón de mover no activa la acción")
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = right_center
+	tc._input(release)
+	_ok(not Input.is_action_pressed("move_right"),
+		"Soltar el clic no suelta la acción de mover")
+	tc._release_all()
+
 	remove_child(screen)
 	screen.queue_free()
 

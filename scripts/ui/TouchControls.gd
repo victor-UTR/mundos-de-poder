@@ -24,6 +24,11 @@ const HELD_ALPHA := 0.60
 ## Dedo (índice de toque) -> acción que está manteniendo pulsada.
 var _finger_action: Dictionary = {}
 
+## Panel de diagnóstico. Se activa añadiendo ?debug a la URL y sirve para
+## depurar en un móvil ajeno, donde no hay consola a la que asomarse.
+var _diag: Label
+var _diag_events: int = 0
+
 
 func _ready() -> void:
 	# Deben seguir vivos con el juego pausado, o no se podría cerrar la
@@ -36,6 +41,41 @@ func _ready() -> void:
 			b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			b.modulate.a = IDLE_ALPHA
 	set_controls_visible(_is_touch_device())
+	_setup_diag()
+
+
+func _setup_diag() -> void:
+	if not _debug_requested():
+		return
+	_diag = Label.new()
+	_diag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_diag.position = Vector2(8, 96)
+	_diag.size = Vector2(400, 120)
+	_diag.add_theme_font_size_override("font_size", 10)
+	_diag.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))
+	add_child(_diag)
+	_update_diag("esperando eventos")
+
+
+## ?debug en la URL enciende el diagnóstico (sólo en el export web).
+func _debug_requested() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	var query := str(JavaScriptBridge.eval("window.location.search", true))
+	return query.find("debug") != -1
+
+
+func _update_diag(last_event: String) -> void:
+	if _diag == null:
+		return
+	_diag.text = "DIAG  eventos=%d\nultimo: %s\nvisible=%s  touchscreen=%s\nacciones activas: %s\nviewport=%s" % [
+		_diag_events,
+		last_event,
+		str(visible),
+		str(DisplayServer.is_touchscreen_available()),
+		str(_finger_action.values()),
+		str(get_viewport().get_visible_rect().size),
+	]
 
 
 ## Detectar el táctil en el export web es poco de fiar: en Chrome de Android
@@ -74,7 +114,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		set_controls_visible(not visible)
 
 
+## Índice de "dedo" que se usa para el ratón, para que no choque con los
+## índices reales de los toques (que empiezan en 0).
+const MOUSE_FINGER := -1
+
+
 func _input(event: InputEvent) -> void:
+	if _diag and (event is InputEventScreenTouch or event is InputEventScreenDrag \
+			or event is InputEventMouseButton or event is InputEventMouseMotion):
+		_diag_events += 1
+		var pos: Vector2 = event.position if "position" in event else Vector2.ZERO
+		_update_diag("%s @ %s -> '%s'" % [
+			event.get_class(), str(pos.round()), _action_at(pos)])
+
 	# Si llega un toque real y los controles estaban ocultos, es que la
 	# detección se equivocó: se muestran en el acto.
 	if event is InputEventScreenTouch and event.pressed and not visible:
@@ -90,11 +142,29 @@ func _input(event: InputEvent) -> void:
 			_release(event.index)
 	elif event is InputEventScreenDrag:
 		# Al arrastrar, el dedo puede pasar de un botón a otro.
-		var current: String = _finger_action.get(event.index, "")
-		var target := _action_at(event.position)
-		if target != current:
-			_release(event.index)
-			_press(event.index, target)
+		_drag(event.index, event.position)
+	# Respaldo por ratón. Godot emula el ratón a partir del táctil
+	# (emulate_mouse_from_touch), así que si en algún navegador móvil no
+	# llegan los eventos de dedo, estos clics sí llegan y el juego se puede
+	# jugar igualmente (sin multitáctil). Sirve también para probar los
+	# controles con el ratón en el escritorio.
+	elif event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_press(MOUSE_FINGER, _action_at(event.position))
+			else:
+				_release(MOUSE_FINGER)
+	elif event is InputEventMouseMotion:
+		if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			_drag(MOUSE_FINGER, event.position)
+
+
+func _drag(finger: int, pos: Vector2) -> void:
+	var current: String = _finger_action.get(finger, "")
+	var target := _action_at(pos)
+	if target != current:
+		_release(finger)
+		_press(finger, target)
 
 
 func _press(finger: int, action: String) -> void:
