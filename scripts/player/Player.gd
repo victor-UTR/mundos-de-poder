@@ -51,6 +51,41 @@ func _ready() -> void:
 	_set_hitbox_active(false)
 	_hits_left_this_life = hits_per_life
 	_update_shield_aura()
+	# Emitir estado inicial al final del frame para que el HUD (que se
+	# suscribe tras await process_frame) reciba el poder ya cargado desde
+	# el save. Sin esto, si arrancas con mochila precargada el HUD dice
+	# "Poder: —" hasta que pulses TAB.
+	call_deferred("_emit_initial_state")
+
+
+func _emit_initial_state() -> void:
+	# Doble deferred: garantiza que el HUD ya ha hecho su await.
+	await get_tree().process_frame
+	active_power_changed.emit(active_power)
+	shield_charges_changed.emit(shield_charges)
+	hits_before_life_changed.emit(_hits_left_this_life)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Atajos de depuración (siempre activos, no dependen del stagger).
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_F10:
+				# Reset de la run actual (mochila + puntos + vidas).
+				GameState.reset_run()
+				GameState.save_game()
+				get_tree().reload_current_scene()
+			KEY_F11:
+				# Reset total del save (incluye regalos y niveles).
+				GameState.hard_reset()
+				get_tree().reload_current_scene()
+			KEY_F12:
+				# Dump por consola del estado actual.
+				print("[DEBUG] backpack=", GameState.backpack,
+					" active_power=", active_power,
+					" shield=", shield_charges,
+					" lives=", GameState.lives,
+					" score=", GameState.score)
 
 
 func _physics_process(delta: float) -> void:

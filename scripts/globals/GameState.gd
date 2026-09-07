@@ -67,6 +67,25 @@ func reset_run() -> void:
 	score = 0
 	lives = 3
 	backpack.clear()
+	score_changed.emit(score)
+	lives_changed.emit(lives)
+
+
+## Borra el save completo (mochila, regalos, niveles). Útil para debug.
+func hard_reset() -> void:
+	score = 0
+	lives = 3
+	backpack.clear()
+	gifts.clear()
+	levels_completed.clear()
+	player_name = ""
+	if FileAccess.file_exists(SAVE_PATH):
+		# remove_absolute acepta rutas user:// tal cual; globalize_path
+		# rompería en el export web (user:// es IndexedDB, no disco).
+		DirAccess.remove_absolute(SAVE_PATH)
+	score_changed.emit(score)
+	lives_changed.emit(lives)
+	print("[DEBUG] Save reseteado.")
 
 
 # --- Persistencia ----------------------------------------------------------
