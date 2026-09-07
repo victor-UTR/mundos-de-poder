@@ -255,8 +255,28 @@ func _check_touch_controls() -> void:
 			continue
 		var r: Rect2 = b.get_global_rect()
 		rects[node_name] = r
-		_ok(r.size.x > 24 and r.size.y > 24,
+		_ok(r.size.x >= 42 and r.size.y >= 42,
 			"El botón '%s' mide %s: demasiado pequeño para un dedo" % [node_name, r.size])
+
+		# Que se VEAN. Los botones se hicieron primero con nodos Panel, cuyo
+		# estilo por defecto es un gris azulado muy oscuro, y al 28% de
+		# opacidad quedaban invisibles sobre el fondo negro del juego: el
+		# primer probador nunca llegó a verlos y tocaba a ciegas. Ninguna de
+		# las otras comprobaciones lo detectó.
+		_ok(b is ColorRect,
+			"El botón '%s' es %s; se esperaba un ColorRect con color propio, no un estilo heredado" % [
+				node_name, b.get_class()])
+		if b is ColorRect:
+			_ok(b.color.a >= 0.4,
+				"El botón '%s' tiene opacidad %.2f: sería casi invisible sobre el fondo oscuro" % [
+					node_name, b.color.a])
+			var brightness: float = (b.color.r + b.color.g + b.color.b) / 3.0
+			_ok(brightness >= 0.3,
+				"El botón '%s' tiene brillo %.2f: no contrasta con el fondo oscuro" % [
+					node_name, brightness])
+		_ok(b.modulate.a >= 0.5,
+			"El botón '%s' queda con modulate.a=%.2f y no se vería" % [
+				node_name, b.modulate.a])
 		_ok(tc._action_at(r.get_center()) == action,
 			"Pulsar en el centro de '%s' no dispara '%s'" % [node_name, action])
 

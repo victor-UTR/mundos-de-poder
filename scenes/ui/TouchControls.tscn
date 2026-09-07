@@ -9,15 +9,15 @@ anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("1_touch")
 
-[node name="Left" type="Panel" parent="."]
+[node name="Left" type="ColorRect" parent="."]
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = -66.0
-offset_right = 66.0
-offset_bottom = -14.0
+offset_left = 12.0
+offset_top = -76.0
+offset_right = 76.0
+offset_bottom = -12.0
 mouse_filter = 2
-self_modulate = Color(0.55, 0.7, 0.95, 1)
+color = Color(0.42, 0.58, 0.85, 0.55)
 
 [node name="Label" type="Label" parent="Left"]
 anchor_right = 1.0
@@ -26,17 +26,18 @@ mouse_filter = 2
 text = "<"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
 
-[node name="Right" type="Panel" parent="."]
+[node name="Right" type="ColorRect" parent="."]
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 74.0
-offset_top = -66.0
-offset_right = 126.0
-offset_bottom = -14.0
+offset_left = 84.0
+offset_top = -76.0
+offset_right = 148.0
+offset_bottom = -12.0
 mouse_filter = 2
-self_modulate = Color(0.55, 0.7, 0.95, 1)
+color = Color(0.42, 0.58, 0.85, 0.55)
 
 [node name="Label" type="Label" parent="Right"]
 anchor_right = 1.0
@@ -45,107 +46,113 @@ mouse_filter = 2
 text = ">"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
 
-[node name="Jump" type="Panel" parent="."]
+[node name="Jump" type="ColorRect" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -66.0
-offset_top = -66.0
-offset_right = -14.0
-offset_bottom = -14.0
+offset_left = -76.0
+offset_top = -76.0
+offset_right = -12.0
+offset_bottom = -12.0
 mouse_filter = 2
-self_modulate = Color(0.5, 0.9, 0.6, 1)
+color = Color(0.35, 0.72, 0.45, 0.55)
 
 [node name="Label" type="Label" parent="Jump"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-text = "Salto"
+text = "SALTO"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 12
 
-[node name="Attack" type="Panel" parent="."]
+[node name="Attack" type="ColorRect" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -126.0
-offset_top = -66.0
-offset_right = -74.0
-offset_bottom = -14.0
+offset_left = -148.0
+offset_top = -76.0
+offset_right = -84.0
+offset_bottom = -12.0
 mouse_filter = 2
-self_modulate = Color(0.95, 0.55, 0.5, 1)
+color = Color(0.82, 0.35, 0.32, 0.55)
 
 [node name="Label" type="Label" parent="Attack"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-text = "Golpe"
+text = "GOLPE"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 12
 
-[node name="Power" type="Panel" parent="."]
+[node name="Power" type="ColorRect" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -126.0
-offset_top = -124.0
-offset_right = -74.0
-offset_bottom = -72.0
+offset_left = -148.0
+offset_top = -148.0
+offset_right = -84.0
+offset_bottom = -84.0
 mouse_filter = 2
-self_modulate = Color(0.95, 0.85, 0.4, 1)
+color = Color(0.85, 0.7, 0.25, 0.55)
 
 [node name="Label" type="Label" parent="Power"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-text = "Poder"
+text = "PODER"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 12
 
-[node name="Interact" type="Panel" parent="."]
+[node name="Interact" type="ColorRect" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -66.0
-offset_top = -124.0
-offset_right = -14.0
-offset_bottom = -72.0
+offset_left = -76.0
+offset_top = -148.0
+offset_right = -12.0
+offset_bottom = -84.0
 mouse_filter = 2
-self_modulate = Color(0.7, 0.65, 0.95, 1)
+color = Color(0.55, 0.48, 0.85, 0.55)
 
 [node name="Label" type="Label" parent="Interact"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-text = "Usar"
+text = "USAR"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 12
 
-[node name="Inventory" type="Panel" parent="."]
+[node name="Inventory" type="ColorRect" parent="."]
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -46.0
+offset_left = -60.0
 offset_top = 36.0
-offset_right = -8.0
-offset_bottom = 68.0
+offset_right = -12.0
+offset_bottom = 78.0
 mouse_filter = 2
-self_modulate = Color(0.8, 0.8, 0.85, 1)
+color = Color(0.6, 0.6, 0.68, 0.55)
 
 [node name="Label" type="Label" parent="Inventory"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-text = "Mochila"
+text = "BOLSA"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10

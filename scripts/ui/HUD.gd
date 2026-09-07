@@ -127,6 +127,8 @@ func set_touch_mode(on: bool) -> void:
 		bottom_left.anchor_bottom = 0.0
 		bottom_left.offset_top = 66.0
 		bottom_left.offset_bottom = 86.0
+		# Se recorta por la derecha para no meterse debajo del botón BOLSA.
+		bottom_left.offset_right = 560.0
 	else:
 		bottom_left.anchor_top = 1.0
 		bottom_left.anchor_bottom = 1.0

@@ -18,8 +18,13 @@ const BUTTON_ACTIONS := {
 	"Inventory": "inventory",
 }
 
-const IDLE_ALPHA := 0.28
-const HELD_ALPHA := 0.60
+## Los botones ya llevan su propia transparencia en el color, así que el
+## estado "pulsado" se marca subiendo el brillo, no la opacidad. Antes eran
+## Panel con el estilo por defecto (gris azulado muy oscuro) al 28% de
+## opacidad: sobre el fondo negro del juego resultaban invisibles y el
+## primer probador nunca llegó a verlos.
+const IDLE_MODULATE := Color(1, 1, 1, 1)
+const HELD_MODULATE := Color(1.7, 1.7, 1.7, 1)
 
 ## Dedo (índice de toque) -> acción que está manteniendo pulsada.
 var _finger_action: Dictionary = {}
@@ -40,7 +45,7 @@ func _ready() -> void:
 		var b := get_node_or_null(node_name)
 		if b:
 			b.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			b.modulate.a = IDLE_ALPHA
+			b.modulate = IDLE_MODULATE
 	set_controls_visible(_is_touch_device())
 	_setup_diag()
 
@@ -265,4 +270,4 @@ func _set_button_held(action: String, held: bool) -> void:
 			continue
 		var b := get_node_or_null(node_name)
 		if b:
-			b.modulate.a = HELD_ALPHA if held else IDLE_ALPHA
+			b.modulate = HELD_MODULATE if held else IDLE_MODULATE

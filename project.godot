@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Palette="*res://scripts/globals/Palette.gd"
 GameState="*res://scripts/globals/GameState.gd"
 ShareCode="*res://scripts/globals/ShareCode.gd"
 Audio="*res://scripts/globals/Audio.gd"
@@ -108,4 +109,6 @@ inventory={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.09, 0.09, 0.12, 1)
+; Palette.SKY_TOP. Sólo se ve si algo falla al construir el cielo: el fondo
+; real lo pinta CityBackground con un degradado.
+environment/defaults/default_clear_color=Color(0.039, 0.047, 0.078, 1)
