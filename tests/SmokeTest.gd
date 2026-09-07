@@ -282,6 +282,20 @@ func _check_touch_controls() -> void:
 	tc._release_all()
 	_ok(not Input.is_action_pressed("jump"), "_release_all no soltó todas las acciones")
 
+	# d) Si la detección de táctil falla (pasa en Chrome de Android), un
+	#    toque real debe hacer aparecer los controles: sin ellos y sin
+	#    teclado el juego es injugable aunque se vea.
+	var jump_center: Vector2 = tc.get_node("Jump").get_global_rect().get_center()
+	tc.set_controls_visible(false)
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.index = 0
+	touch.position = jump_center
+	tc._input(touch)
+	_ok(tc.visible,
+		"Un toque en pantalla no hace aparecer los controles ocultos")
+	tc._release_all()
+
 	remove_child(screen)
 	screen.queue_free()
 

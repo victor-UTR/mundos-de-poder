@@ -35,7 +35,21 @@ func _ready() -> void:
 		if b:
 			b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			b.modulate.a = IDLE_ALPHA
-	set_controls_visible(DisplayServer.is_touchscreen_available())
+	set_controls_visible(_is_touch_device())
+
+
+## Detectar el táctil en el export web es poco de fiar: en Chrome de Android
+## `is_touchscreen_available()` devuelve false a menudo, y entonces el juego
+## se ve pero no hay forma de controlarlo. Se combinan varias señales, y
+## además los controles aparecen solos al primer toque (ver _input), que es
+## la única prueba que no falla: si tocas la pantalla, hay pantalla táctil.
+func _is_touch_device() -> bool:
+	if DisplayServer.is_touchscreen_available():
+		return true
+	for f in ["mobile", "android", "ios", "web_android", "web_ios"]:
+		if OS.has_feature(f):
+			return true
+	return false
 
 
 ## Muestra u oculta los controles y avisa al HUD para que recoloque lo que
@@ -61,6 +75,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Si llega un toque real y los controles estaban ocultos, es que la
+	# detección se equivocó: se muestran en el acto.
+	if event is InputEventScreenTouch and event.pressed and not visible:
+		set_controls_visible(true)
+
 	if not visible:
 		return
 
