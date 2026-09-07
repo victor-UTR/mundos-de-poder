@@ -290,17 +290,31 @@ func _check_touch_controls() -> void:
 				"Los botones '%s' y '%s' se solapan" % [names[i], names[j]])
 
 	# c) Multitáctil: dos dedos deben poder mantener dos acciones a la vez.
-	tc._press(0, "move_right")
-	tc._press(1, "jump")
+	#    Los dedos se identifican por posición, no por índice (ver el bug de
+	#    iOS documentado en TouchControls.gd y en el apartado (g)).
+	var c_right: Vector2 = tc.get_node("Right").get_global_rect().get_center()
+	var c_jump: Vector2 = tc.get_node("Jump").get_global_rect().get_center()
+	tc._press_at(c_right)
+	tc._press_at(c_jump)
 	_ok(Input.is_action_pressed("move_right") and Input.is_action_pressed("jump"),
 		"Dos dedos no mantienen dos acciones a la vez (no se podría correr y saltar)")
-	tc._release(0)
+	tc._release_at(c_right)
 	_ok(not Input.is_action_pressed("move_right"),
 		"Levantar el dedo no suelta la acción de movimiento")
 	_ok(Input.is_action_pressed("jump"),
 		"Levantar un dedo soltó la acción del otro")
 	tc._release_all()
 	_ok(not Input.is_action_pressed("jump"), "_release_all no soltó todas las acciones")
+
+	# c2) Levantar el dedo un poco fuera del botón (se ha deslizado antes de
+	#     soltar) también tiene que soltar la acción. Si no, se queda pegada:
+	#     con move_left y move_right pegadas a la vez el eje se anula y el
+	#     personaje deja de responder del todo.
+	tc._press_at(c_right)
+	tc._release_at(c_right + Vector2(0, -40))
+	_ok(not Input.is_action_pressed("move_right"),
+		"Soltar el dedo justo fuera del botón deja la acción pegada")
+	tc._release_all()
 
 	# d) Si la detección de táctil falla (pasa en Chrome de Android), un
 	#    toque real debe hacer aparecer los controles: sin ellos y sin
@@ -323,10 +337,10 @@ func _check_touch_controls() -> void:
 	var player_e2e := screen.get_node_or_null("Player")
 	if player_e2e:
 		var x_before: float = player_e2e.global_position.x
-		tc._press(0, "move_right")
+		tc._press_at(c_right)
 		for _i in 12:
 			await get_tree().physics_frame
-		tc._release(0)
+		tc._release_at(c_right)
 		_ok(player_e2e.global_position.x > x_before + 1.0,
 			"Pulsar el botón de mover no desplaza al personaje (x %.1f -> %.1f)" % [
 				x_before, player_e2e.global_position.x])
@@ -334,7 +348,14 @@ func _check_touch_controls() -> void:
 	# e) Respaldo por ratón: si un navegador móvil no manda eventos de dedo,
 	#    los clics emulados deben servir igual, o el juego se ve pero no se
 	#    puede mover al personaje.
+	#
+	#    Hay que rebobinar `_has_real_touch`: el apartado (d) mandó un toque
+	#    de verdad, y desde ese momento TouchControls ignora el ratón a
+	#    propósito (Godot emula ratón desde el táctil, y procesar ambos
+	#    duplicaba las pulsaciones y dejaba acciones pegadas). Aquí se simula
+	#    el caso contrario: un dispositivo del que nunca llegan dedos.
 	tc.set_controls_visible(true)
+	tc._has_real_touch = false
 	var right_center: Vector2 = tc.get_node("Right").get_global_rect().get_center()
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
@@ -352,8 +373,70 @@ func _check_touch_controls() -> void:
 		"Soltar el clic no suelta la acción de mover")
 	tc._release_all()
 
+	# f) La otra cara: en un móvil de verdad llegan el dedo Y el ratón
+	#    emulado por el mismo toque. Si se procesan los dos, un "soltar"
+	#    perdido deja la acción pegada para siempre y el personaje se queda
+	#    clavado. Tras el primer dedo real, el ratón debe ignorarse.
+	tc.set_controls_visible(true)
+	var real_touch := InputEventScreenTouch.new()
+	real_touch.pressed = true
+	real_touch.index = 0
+	real_touch.position = right_center
+	tc._input(real_touch)
+	tc._release_all()
+
+	var ghost_click := InputEventMouseButton.new()
+	ghost_click.button_index = MOUSE_BUTTON_LEFT
+	ghost_click.pressed = true
+	ghost_click.position = right_center
+	tc._input(ghost_click)
+	_ok(not Input.is_action_pressed("move_right"),
+		"El ratón emulado se procesa aunque ya haya toques reales (duplica pulsaciones)")
+	tc._release_all()
+
+	# g) Regresión del bug de iOS (godotengine/godot#95941, sin arreglar en
+	#    4.7): en el export web sobre iPhone/iPad, `event.index` es un entero
+	#    basura que se incrementa en CADA evento, sin relación con el dedo.
+	#    El "soltar" nunca lleva el mismo índice que el "pulsar", así que
+	#    emparejarlos por índice dejaba la acción pulsada para siempre: con
+	#    move_left y move_right pegadas el eje se anula y el personaje no se
+	#    movía. Por eso aquí los dedos se siguen por posición.
+	tc.set_controls_visible(true)
+	var bogus := 1738566069
+	tc._input(_ios_touch(c_right, true, bogus))
+	_ok(Input.is_action_pressed("move_right"),
+		"Un toque con índice basura (iOS web) no activa la acción")
+	tc._input(_ios_touch(c_right, false, bogus + 7))
+	_ok(not Input.is_action_pressed("move_right"),
+		"Con los índices basura de iOS la acción se queda pegada al soltar")
+
+	# Y lo mismo con dos dedos: correr y saltar a la vez sin índices fiables.
+	tc._input(_ios_touch(c_right, true, bogus + 20))
+	tc._input(_ios_touch(c_jump, true, bogus + 21))
+	_ok(Input.is_action_pressed("move_right") and Input.is_action_pressed("jump"),
+		"Con índices basura no se pueden mantener dos acciones a la vez")
+	tc._input(_ios_touch(c_right, false, bogus + 22))
+	_ok(not Input.is_action_pressed("move_right"),
+		"Con índices basura, soltar un dedo no suelta su acción")
+	_ok(Input.is_action_pressed("jump"),
+		"Con índices basura, soltar un dedo soltó también la acción del otro")
+	tc._input(_ios_touch(c_jump, false, bogus + 23))
+	_ok(not Input.is_action_pressed("jump"),
+		"Con índices basura, la última acción se queda pegada")
+	tc._release_all()
+
 	remove_child(screen)
 	screen.queue_free()
+
+
+## Fabrica un toque como los que manda el export web en iOS: la posición es
+## correcta, pero el índice es basura y distinto en cada evento.
+func _ios_touch(pos: Vector2, pressed: bool, index: int) -> InputEventScreenTouch:
+	var ev := InputEventScreenTouch.new()
+	ev.position = pos
+	ev.pressed = pressed
+	ev.index = index
+	return ev
 
 
 ## Monta el Empire State y comprueba que cada servidor exige de verdad que
