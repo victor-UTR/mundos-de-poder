@@ -74,11 +74,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				# Reset de la run actual (mochila + puntos + vidas).
 				GameState.reset_run()
 				GameState.save_game()
-				get_tree().reload_current_scene()
+				LevelManager.go_to(1, "start")
 			KEY_F11:
 				# Reset total del save (incluye regalos y niveles).
 				GameState.hard_reset()
-				get_tree().reload_current_scene()
+				LevelManager.go_to(1, "start")
 			KEY_F12:
 				# Dump por consola del estado actual.
 				print("[DEBUG] backpack=", GameState.backpack,
@@ -287,10 +287,15 @@ func _emit_emp() -> void:
 	_flash(Color(1.0, 1.0, 0.4))
 
 
+## Duración de la revelación. Cruzar el pozo de la pantalla 3 lleva unos
+## 3,4 s andando; con menos margen la plataforma se desvanece bajo los pies.
+const VISION_DURATION := 6.0
+
+
 func _reveal_hidden() -> void:
 	for h in get_tree().get_nodes_in_group("hidden"):
 		if h.has_method("reveal"):
-			h.reveal(3.0)
+			h.reveal(VISION_DURATION)
 
 
 func _flash(c: Color) -> void:

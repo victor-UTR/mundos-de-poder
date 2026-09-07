@@ -15,7 +15,11 @@ Publicado en GitHub Pages: `https://victor-utr.github.io/mundos-de-poder/`
 - `J`: atacar
 - `Q`: usar poder activo
 - `TAB`: cambiar de poder activo
+- `1` / `2` / `3`: seleccionar poder por ranura
 - `E`: interactuar
+
+Atajos de depuración: `F10` reinicia la partida, `F11` borra el guardado,
+`F12` vuelca el estado por consola.
 
 ## Desarrollo local
 
@@ -32,13 +36,34 @@ godot project.godot
 ## Estructura
 
 ```
-scenes/       Escenas .tscn (Main, Player, niveles, UI)
+scenes/
+  Boot.tscn   Escena inicial: manda al LevelManager a la pantalla guardada
+  levels/     Screen1..Screen5 + piezas reutilizables (Platform, Door)
+  player/     Player
+  enemies/    Los 3 robots
+  ui/         HUD
 scripts/      GDScript
-  globals/    Autoloads (GameState, ShareCode)
+  globals/    Autoloads (GameState, ShareCode, Audio, LevelManager)
+  levels/     LevelScreen, Door, Platform, Goal
   player/     Lógica del jugador
+tests/        SmokeTest.tscn (se ejecuta en CI)
 docs/         Diseño de niveles y mecánicas
-.github/      CI: build web + deploy a Pages
+.github/      CI: smoke test + build web + deploy a Pages
 ```
+
+El Nivel 1 son 5 pantallas encadenadas. `LevelScreen.gd` genera el suelo,
+los muros y los pozos a partir de `world_width` y `gaps`, así que los `.tscn`
+sólo contienen lo propio de cada pantalla. Las puertas son bidireccionales:
+si llegas al Empire State sin los 3 poderes, puedes volver a buscarlos.
+
+### Pruebas
+
+```powershell
+godot --headless res://tests/SmokeTest.tscn
+```
+
+Comprueba que las 5 pantallas montan, que el suelo y los pozos se generan y
+que cada puerta apunta a un punto de aparición que existe en su destino.
 
 ## Compartir poderes con amigos (async, sin servidor)
 

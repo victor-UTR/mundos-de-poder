@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Mundos de Poder"
 config/description="Niño Perdido: Mundos de Poder — juego didáctico para niños de 10 años."
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/Boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -25,6 +25,7 @@ config/icon="res://icon.svg"
 GameState="*res://scripts/globals/GameState.gd"
 ShareCode="*res://scripts/globals/ShareCode.gd"
 Audio="*res://scripts/globals/Audio.gd"
+LevelManager="*res://scripts/globals/LevelManager.gd"
 
 [display]
 

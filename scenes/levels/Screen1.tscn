@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/LevelScreen.gd" id="1_screen"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1player0" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1hud000" path="res://scenes/ui/HUD.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/levels/Platform.tscn" id="4_plat"]
+[ext_resource type="PackedScene" path="res://scenes/levels/Door.tscn" id="5_door"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1robotesc0" path="res://scenes/enemies/RobotEscaner.tscn" id="6_esc"]
+
+[node name="Screen1" type="Node2D"]
+script = ExtResource("1_screen")
+screen_index = 1
+world_width = 1400.0
+screen_title = "Calle 1"
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="start" type="Marker2D" parent="Spawns"]
+position = Vector2(80, 300)
+
+[node name="from_right" type="Marker2D" parent="Spawns"]
+position = Vector2(1240, 300)
+
+[node name="Platform1" parent="." instance=ExtResource("4_plat")]
+position = Vector2(300, 272)
+
+[node name="Platform2" parent="." instance=ExtResource("4_plat")]
+position = Vector2(520, 238)
+
+[node name="Platform3" parent="." instance=ExtResource("4_plat")]
+position = Vector2(760, 262)
+size = Vector2(120, 12)
+
+[node name="RobotEscaner1" parent="." instance=ExtResource("6_esc")]
+position = Vector2(900, 304)
+
+[node name="DoorRight" parent="." instance=ExtResource("5_door")]
+position = Vector2(1330, 280)
+target_screen = 2
+target_spawn = "from_left"
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(80, 300)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+limit_left = 0
+limit_top = 0
+limit_right = 1400
+limit_bottom = 360
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]

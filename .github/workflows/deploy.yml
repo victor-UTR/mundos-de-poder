@@ -46,6 +46,11 @@ jobs:
         run: |
           godot --headless --import || true
 
+      - name: Smoke test (Nivel 1)
+        run: |
+          set -euo pipefail
+          godot --headless res://tests/SmokeTest.tscn
+
       - name: Export Web build
         run: |
           mkdir -p build/web

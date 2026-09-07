@@ -24,6 +24,7 @@ var lives: int = 3
 var backpack: Array[int] = []            # poderes recolectados por mí
 var gifts: Array[Dictionary] = []        # [{from: "A", power: 1}, ...]
 var levels_completed: Array[int] = []
+var current_screen: int = 1              # pantalla del Nivel 1 en curso
 
 signal power_collected(power_id: int)
 signal gift_received(from_name: String, power_id: int)
@@ -67,6 +68,7 @@ func reset_run() -> void:
 	score = 0
 	lives = 3
 	backpack.clear()
+	current_screen = 1
 	score_changed.emit(score)
 	lives_changed.emit(lives)
 
@@ -79,6 +81,7 @@ func hard_reset() -> void:
 	gifts.clear()
 	levels_completed.clear()
 	player_name = ""
+	current_screen = 1
 	if FileAccess.file_exists(SAVE_PATH):
 		# remove_absolute acepta rutas user:// tal cual; globalize_path
 		# rompería en el export web (user:// es IndexedDB, no disco).
@@ -97,6 +100,7 @@ func save_game() -> void:
 		"backpack": backpack,
 		"gifts": gifts,
 		"levels_completed": levels_completed,
+		"current_screen": current_screen,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -130,3 +134,4 @@ func load_game() -> void:
 	levels_completed.clear()
 	for l in raw_lvls:
 		levels_completed.append(int(l))
+	current_screen = int(parsed.get("current_screen", 1))

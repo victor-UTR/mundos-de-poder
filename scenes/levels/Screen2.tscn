@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/LevelScreen.gd" id="1_screen"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1player0" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1hud000" path="res://scenes/ui/HUD.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/levels/Platform.tscn" id="4_plat"]
+[ext_resource type="PackedScene" path="res://scenes/levels/Door.tscn" id="5_door"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1robotesc0" path="res://scenes/enemies/RobotEscaner.tscn" id="6_esc"]
+[ext_resource type="PackedScene" uid="uid://b0mdp1robottor0" path="res://scenes/enemies/RobotTorreta.tscn" id="7_tor"]
+
+[node name="Screen2" type="Node2D"]
+script = ExtResource("1_screen")
+screen_index = 2
+world_width = 1800.0
+screen_title = "Calle 2"
+gaps = Array[Vector2]([Vector2(820, 900)])
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="from_left" type="Marker2D" parent="Spawns"]
+position = Vector2(120, 300)
+
+[node name="from_right" type="Marker2D" parent="Spawns"]
+position = Vector2(1660, 300)
+
+[node name="Platform1" parent="." instance=ExtResource("4_plat")]
+position = Vector2(300, 268)
+
+[node name="Platform2" parent="." instance=ExtResource("4_plat")]
+position = Vector2(480, 232)
+
+[node name="Platform3" parent="." instance=ExtResource("4_plat")]
+position = Vector2(700, 266)
+
+[node name="Platform4" parent="." instance=ExtResource("4_plat")]
+position = Vector2(980, 250)
+size = Vector2(120, 12)
+
+[node name="Platform5" parent="." instance=ExtResource("4_plat")]
+position = Vector2(1200, 270)
+
+[node name="Platform6" parent="." instance=ExtResource("4_plat")]
+position = Vector2(1420, 235)
+
+[node name="RobotEscaner1" parent="." instance=ExtResource("6_esc")]
+position = Vector2(400, 304)
+
+[node name="RobotEscaner2" parent="." instance=ExtResource("6_esc")]
+position = Vector2(1120, 304)
+
+[node name="RobotTorreta1" parent="." instance=ExtResource("7_tor")]
+position = Vector2(1500, 306)
+
+[node name="DoorLeft" parent="." instance=ExtResource("5_door")]
+position = Vector2(48, 280)
+target_screen = 1
+target_spawn = "from_right"
+
+[node name="DoorRight" parent="." instance=ExtResource("5_door")]
+position = Vector2(1740, 280)
+target_screen = 3
+target_spawn = "from_left"
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(120, 300)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+limit_left = 0
+limit_top = 0
+limit_right = 1800
+limit_bottom = 360
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
