@@ -29,8 +29,10 @@ const CITY_NEAR := Color("2d3548")
 ## ciudad está desolada, no viva.
 const CITY_WINDOW := Color("4a5570")
 
-## Tinte nocturno global (CanvasModulate). Blanco = sin tinte.
-const NIGHT_TINT := Color("aab4d4")
+# Aquí iba un CanvasModulate con tinte nocturno, y se descartó a propósito:
+# multiplica TODOS los CanvasItem, así que oscurecería también al jugador y
+# a los poderes, aplanando justo el contraste fondo/primer plano que esta
+# paleta busca. El ambiente nocturno ya está en los colores del fondo.
 
 # --- Geometría sólida ------------------------------------------------------
 # Clave de legibilidad: TODO esto es más claro que cualquier capa de fondo,

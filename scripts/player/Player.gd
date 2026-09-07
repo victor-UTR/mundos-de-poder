@@ -48,6 +48,7 @@ var _stagger_until: float = 0.0    # hasta cuando el input está bloqueado
 
 func _ready() -> void:
 	add_to_group("player")
+	_apply_palette()
 	if not GameState.backpack.is_empty():
 		active_power = GameState.backpack[0]
 	GameState.power_collected.connect(_on_power_collected)
@@ -59,6 +60,21 @@ func _ready() -> void:
 	# el save. Sin esto, si arrancas con mochila precargada el HUD dice
 	# "Poder: —" hasta que pulses TAB.
 	call_deferred("_emit_initial_state")
+
+
+## Los colores del .tscn son sólo vista previa del editor. Los de verdad
+## salen de Palette, para que cambiar el aspecto del juego sea un archivo.
+func _apply_palette() -> void:
+	if sprite:
+		sprite.color = Palette.PLAYER
+	if hitbox_sprite:
+		hitbox_sprite.color = Palette.PLAYER_HITBOX
+	var ring := get_node_or_null("ShieldAura/Ring")
+	if ring:
+		ring.color = Palette.SHIELD_RING
+	var inner := get_node_or_null("ShieldAura/Inner")
+	if inner:
+		inner.color = Palette.SHIELD_INNER
 
 
 func _emit_initial_state() -> void:
@@ -165,7 +181,7 @@ func take_damage(amount: int = 1, from_pos: Vector2 = Vector2.ZERO) -> void:
 		shield_charges_changed.emit(shield_charges)
 		_update_shield_aura()
 		_apply_knockback(push_dir, 0.6)
-		_flash(Color(0.4, 0.8, 1.0))
+		_flash(Palette.FLASH_SHIELD)
 		invulnerable_until = now + 0.7
 		return
 
@@ -176,10 +192,10 @@ func take_damage(amount: int = 1, from_pos: Vector2 = Vector2.ZERO) -> void:
 	if _hits_left_this_life <= 0:
 		GameState.lose_life()
 		_hits_left_this_life = hits_per_life
-		_flash(Color(1.0, 0.25, 0.25))
+		_flash(Palette.FLASH_HURT)
 		invulnerable_until = now + 1.1
 	else:
-		_flash(Color(1.0, 0.6, 0.3))
+		_flash(Palette.FLASH_KNOCKBACK)
 		invulnerable_until = now + 0.8
 	hits_before_life_changed.emit(_hits_left_this_life)
 
@@ -279,7 +295,7 @@ func _use_active_power() -> void:
 			shield_charges += 1
 			shield_charges_changed.emit(shield_charges)
 			_update_shield_aura()
-			_flash(Color(0.4, 0.8, 1.0))
+			_flash(Palette.FLASH_SHIELD)
 			Audio.play_ui_switch()
 		GameState.Power.EMP:
 			var stunned := _emit_emp()
@@ -313,7 +329,7 @@ func _emit_emp() -> int:
 			if e.has_method("stun"):
 				e.stun(2.0)
 				stunned += 1
-	_flash(Color(1.0, 1.0, 0.4))
+	_flash(Palette.FLASH_EMP)
 	return stunned
 
 

@@ -24,6 +24,21 @@ var is_dead: bool = false
 func _ready() -> void:
 	hp = max_hp
 	add_to_group("enemies")
+	_apply_palette()
+
+
+## Sobreescribir en subclases para pintarse desde Palette. Los colores del
+## .tscn son sólo vista previa del editor; los de verdad se aplican aquí.
+func _apply_palette() -> void:
+	pass
+
+
+## Pinta un ColorRect hijo si existe. Evita repetir el get_node_or_null +
+## comprobación en los tres robots.
+func _tint(node_path: String, c: Color) -> void:
+	var n := get_node_or_null(node_path)
+	if n is ColorRect:
+		n.color = c
 
 
 func _physics_process(delta: float) -> void:
@@ -51,14 +66,14 @@ func take_damage(amount: int = 1) -> void:
 	if is_dead:
 		return
 	hp -= amount
-	_flash(Color(1, 0.4, 0.4))
+	_flash(Palette.FLASH_HURT)
 	if hp <= 0:
 		_die()
 
 
 func stun(duration: float) -> void:
 	stun_until = Time.get_ticks_msec() / 1000.0 + duration
-	_flash(Color(0.5, 0.8, 1.0))
+	_flash(Palette.FLASH_STUN)
 
 
 func _die() -> void:

@@ -21,6 +21,13 @@ func _ready() -> void:
 	hp = max_hp
 
 
+func _apply_palette() -> void:
+	_tint("Sprite", Palette.ENEMY_SIREN)
+	_tint("Light1", Palette.ENEMY_SIREN_LIGHT)
+	_tint("Light2", Palette.ENEMY_SIREN_LIGHT)
+	_tint("Antenna", Palette.ENEMY_SIREN_ANTENNA)
+
+
 func _ai_tick(_delta: float) -> void:
 	var player := _get_player()
 	if player and global_position.distance_to(player.global_position) <= detection_range:

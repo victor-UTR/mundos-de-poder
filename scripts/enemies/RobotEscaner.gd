@@ -17,6 +17,12 @@ func _ready() -> void:
 	hp = max_hp
 
 
+func _apply_palette() -> void:
+	_tint("Sprite", Palette.ENEMY_SCANNER)
+	_tint("Eye", Palette.ENEMY_SCANNER_EYE)
+	_tint("Antenna", Palette.ENEMY_SCANNER)
+
+
 func _ai_tick(_delta: float) -> void:
 	var dx := global_position.x - _origin_x
 	if dx > patrol_range and _dir > 0:

@@ -24,7 +24,10 @@ const FALL_LIMIT := 460.0
 
 const GROUND_THICKNESS := 32.0
 const WALL_HEIGHT := 400.0
-const GROUND_COLOR := Color(0.2, 0.22, 0.28)
+## Grosor del borde superior del suelo. Una franja más clara que separa el
+## suelo del fondo: sin ella, con el parallax detrás, cuesta ver dónde acaba
+## el decorado y empieza lo que se pisa.
+const GROUND_EDGE_H := 3.0
 
 @onready var spawns: Node2D = $Spawns
 
@@ -33,11 +36,23 @@ var _respawn_point: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
+	_build_background()
 	_build_ground()
 	_build_walls()
 	_place_player()
 	_setup_camera()
 	_announce()
+
+
+## Ciudad nocturna con parallax detrás de todo. Se monta aquí y no en cada
+## .tscn para que las cinco pantallas la tengan sin duplicar nada.
+func _build_background() -> void:
+	var bg := Node2D.new()
+	bg.name = "CityBackground"
+	bg.set_script(load("res://scripts/levels/CityBackground.gd"))
+	bg.ground_top = ground_top
+	add_child(bg)
+	move_child(bg, 0)
 
 
 # --- Geometría generada ----------------------------------------------------
@@ -64,11 +79,18 @@ func _build_ground() -> void:
 		body.add_child(cs)
 
 		var rect := ColorRect.new()
-		rect.color = GROUND_COLOR
+		rect.color = Palette.GROUND
 		rect.position = Vector2(seg.x, ground_top)
 		rect.size = Vector2(seg_width, GROUND_THICKNESS)
 		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		body.add_child(rect)
+
+		var edge := ColorRect.new()
+		edge.color = Palette.GROUND_EDGE
+		edge.position = Vector2(seg.x, ground_top)
+		edge.size = Vector2(seg_width, GROUND_EDGE_H)
+		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		body.add_child(edge)
 
 	add_child(body)
 	move_child(body, 0)

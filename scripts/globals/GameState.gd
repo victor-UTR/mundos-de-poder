@@ -11,24 +11,24 @@ const SAVE_VERSION := 1
 # level: nivel donde se obtiene
 enum Power { VISION = 1, SHIELD = 2, EMP = 3 }
 
+# Los colores viven en Palette, no aquí: antes estaban duplicados en este
+# diccionario, en Player.tscn, en HUD.gd y en Inventory.gd, y se salían de
+# sincronía en cuanto se tocaba uno.
 const POWER_INFO := {
 	Power.VISION: {
 		"name": "Visión", "level": 1,
 		"desc": "Revela plataformas y botones ocultos.",
 		"source": "Robot-Escáner",
-		"color": Color(0.55, 0.85, 1.0),
 	},
 	Power.SHIELD: {
 		"name": "Escudo", "level": 1,
 		"desc": "Bloquea el próximo golpe recibido.",
 		"source": "Robot-Torreta",
-		"color": Color(0.4, 0.9, 0.5),
 	},
 	Power.EMP: {
 		"name": "Pulso EMP", "level": 1,
 		"desc": "Aturde a los enemigos cercanos 2 segundos.",
 		"source": "Robot-Sirena",
-		"color": Color(1.0, 0.85, 0.3),
 	},
 }
 
@@ -36,10 +36,11 @@ const POWER_INFO := {
 const POWER_ORDER := [Power.VISION, Power.SHIELD, Power.EMP]
 
 
-## Color del poder, o gris si no existe.
+## Color del poder, o gris si no existe. Se mantiene aquí como fachada
+## porque medio HUD ya llamaba a GameState.power_color(); por dentro delega
+## en Palette, que es la fuente de verdad.
 func power_color(power_id: int) -> Color:
-	var info: Dictionary = POWER_INFO.get(power_id, {})
-	return info.get("color", Color(0.6, 0.6, 0.65))
+	return Palette.power(power_id)
 
 
 ## Nombre del poder, o "?" si no existe.

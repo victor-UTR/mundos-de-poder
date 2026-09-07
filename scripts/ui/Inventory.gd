@@ -5,7 +5,9 @@ extends Control
 ## Pausa el juego mientras está abierta y permite cambiar de poder con
 ## 1/2/3, para que se pueda consultar con calma sin que te maten mientras.
 
-const LOCKED_COLOR := Color(0.28, 0.28, 0.32)
+# Antes había aquí un LOCKED_COLOR propio, que era uno de los cuatro grises
+# "apagado" distintos que tenía el proyecto. Ahora sale de Palette. No puede
+# ser const: las constantes no pueden leer un autoload.
 
 @onready var list: VBoxContainer = $Panel/Box/List
 @onready var gifts_label: Label = $Panel/Box/Gifts
@@ -124,7 +126,7 @@ func _make_row(power_id: int, owned: bool, is_active: bool, shield: int, slot_te
 
 	var dot := ColorRect.new()
 	dot.custom_minimum_size = Vector2(18, 18)
-	dot.color = color if owned else LOCKED_COLOR
+	dot.color = color if owned else Palette.UI_INACTIVE
 	hbox.add_child(dot)
 
 	var texts := VBoxContainer.new()
@@ -135,7 +137,7 @@ func _make_row(power_id: int, owned: bool, is_active: bool, shield: int, slot_te
 	var title := Label.new()
 	var prefix := "[%s] " % slot_text if slot_text != "" else ""
 	title.text = "%s%s" % [prefix, info.get("name", "?")]
-	title.add_theme_color_override("font_color", color if owned else LOCKED_COLOR)
+	title.add_theme_color_override("font_color", color if owned else Palette.UI_INACTIVE)
 	texts.add_child(title)
 
 	var desc := Label.new()
@@ -146,20 +148,20 @@ func _make_row(power_id: int, owned: bool, is_active: bool, shield: int, slot_te
 	else:
 		desc.text = "Bloqueado — lo suelta el %s" % info.get("source", "?")
 	desc.add_theme_font_size_override("font_size", 11)
-	desc.add_theme_color_override("font_color", Color(0.75, 0.78, 0.82))
+	desc.add_theme_color_override("font_color", Palette.UI_TEXT_DIM)
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	texts.add_child(desc)
 
 	var state := Label.new()
 	if is_active:
 		state.text = "EN USO"
-		state.add_theme_color_override("font_color", Color(1, 0.95, 0.5))
+		state.add_theme_color_override("font_color", Palette.UI_TEXT_HILITE)
 	elif owned:
 		state.text = "en mochila"
-		state.add_theme_color_override("font_color", Color(0.7, 0.75, 0.8))
+		state.add_theme_color_override("font_color", Palette.UI_TEXT_DIM)
 	else:
 		state.text = "—"
-		state.add_theme_color_override("font_color", LOCKED_COLOR)
+		state.add_theme_color_override("font_color", Palette.UI_INACTIVE)
 	state.add_theme_font_size_override("font_size", 11)
 	state.custom_minimum_size = Vector2(76, 0)
 	state.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
