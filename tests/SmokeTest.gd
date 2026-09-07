@@ -18,9 +18,31 @@ var _save_backup: String = ""
 var _had_save: bool = false
 
 
+## Teclas que promete el README. Se comparan contra el InputMap real usando
+## las constantes KEY_* en vez de números: `cycle_power` estuvo asignado a
+## 4194332 (F1) creyendo que era TAB (4194306), y no se notó hasta que el
+## primer probador dijo que no podía cambiar de poder.
+const EXPECTED_KEYS := {
+	"move_left": [KEY_A, KEY_LEFT],
+	"move_right": [KEY_D, KEY_RIGHT],
+	"jump": [KEY_SPACE, KEY_UP],
+	"attack": [KEY_J],
+	"use_power": [KEY_Q],
+	"interact": [KEY_E],
+	"cycle_power": [KEY_TAB],
+	"power_1": [KEY_1],
+	"power_2": [KEY_2],
+	"power_3": [KEY_3],
+	"inventory": [KEY_I],
+}
+
+
 func _ready() -> void:
 	await get_tree().process_frame
 	_backup_save()
+
+	# 0) Las teclas son las que dice la documentación.
+	_check_input_map()
 
 	# 1) Todas las pantallas cargan e informan de sus marcadores.
 	var spawns_by_screen := {}
@@ -51,6 +73,30 @@ func _ready() -> void:
 
 	_restore_save()
 	_report()
+
+
+func _check_input_map() -> void:
+	for action in EXPECTED_KEYS:
+		if not InputMap.has_action(action):
+			_fail("Falta la acción de entrada '%s'" % action)
+			continue
+		var actual: Array = []
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventKey:
+				actual.append(ev.physical_keycode)
+		for expected_key in EXPECTED_KEYS[action]:
+			_ok(expected_key in actual,
+				"'%s' deberia responder a %s pero está en [%s]" % [
+					action,
+					OS.get_keycode_string(expected_key),
+					_keycode_names(actual)])
+
+
+func _keycode_names(codes: Array) -> String:
+	var names := []
+	for c in codes:
+		names.append(OS.get_keycode_string(c))
+	return ", ".join(names)
 
 
 func _backup_save() -> void:
