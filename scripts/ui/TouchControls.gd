@@ -104,6 +104,18 @@ func _setup_diag() -> void:
 	_update_diag("esperando eventos")
 
 
+## SHA corto del commit del que salió este build, o "dev" en local. Lo
+## inyecta el workflow en application/config/version antes de exportar.
+##
+## Está aquí porque sin él no hay forma de saber, desde el móvil de otro, qué
+## versión se está ejecutando: GitHub Pages sirve todo con max-age=600, así
+## que el navegador puede traerse un index.html nuevo y reusar el index.pck
+## viejo, que es donde vive el juego entero. Depurar el build equivocado
+## cuesta una ronda completa; ya pasó una vez.
+func build_id() -> String:
+	return str(ProjectSettings.get_setting("application/config/version", "?"))
+
+
 ## ?debug en la URL enciende el diagnóstico (sólo en el export web).
 func _debug_requested() -> bool:
 	if not OS.has_feature("web"):
@@ -130,7 +142,8 @@ func _update_diag(last_event: String) -> void:
 		player_info = "x=%.0f  vel=%.0f" % [
 			player.global_position.x, player.velocity.x]
 	var inv := get_parent().get_node_or_null("Inventory") if get_parent() else null
-	_diag.text = "DIAG ev=%d  frame=%d  PAUSA=%s\nultimo: %s\nL=%s R=%s salto=%s\nplayer: %s\nmochila_abierta=%s\nvisible=%s touch=%s vp=%s\nmantenidas: %s\nentorno: " % [
+	_diag.text = "DIAG build=%s  ev=%d  frame=%d  PAUSA=%s\nultimo: %s\nL=%s R=%s salto=%s\nplayer: %s\nmochila_abierta=%s\nvisible=%s touch=%s vp=%s\nmantenidas: %s\nentorno: " % [
+		build_id(),
 		_diag_events,
 		Engine.get_process_frames(),
 		str(get_tree().paused),

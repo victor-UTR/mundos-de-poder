@@ -16,6 +16,11 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Mundos de Poder"
 config/description="Niño Perdido: Mundos de Poder — juego didáctico para niños de 10 años."
+; Identificador del build. En local vale "dev"; el workflow lo sustituye por
+; el SHA corto del commit antes de exportar, y el panel de ?debug lo enseña.
+; Sin esto no hay forma de saber desde un movil que version se esta jugando,
+; y se pierden rondas enteras depurando un .pck cacheado (paso una vez).
+config/version="dev"
 run/main_scene="res://scenes/Boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"

@@ -42,6 +42,14 @@ jobs:
           unzip -q templates.tpz
           mv templates/* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
 
+      - name: Stamp build id into the project
+        run: |
+          set -euo pipefail
+          SHA_SHORT="${GITHUB_SHA:0:7}"
+          sed -i "s|^config/version=.*|config/version=\"${SHA_SHORT}\"|" project.godot
+          grep '^config/version=' project.godot
+          echo "SHA_SHORT=${SHA_SHORT}" >> "$GITHUB_ENV"
+
       - name: Import project (headless)
         run: |
           godot --headless --import || true
@@ -58,7 +66,44 @@ jobs:
           # GitHub Pages sirve index.html por defecto
           ls -la build/web
 
-      - name: Add COOP/COEP headers via _headers (Cloudflare) and .nojekyll
+      # GitHub Pages sirve TODO con Cache-Control: max-age=600 y no deja
+      # cambiar las cabeceras. El navegador puede entonces traerse un
+      # index.html recién publicado y reusar el index.pck viejo, que es donde
+      # vive el juego entero: se depura un build que no es el desplegado.
+      # Pasó, y costó una ronda entera de diagnóstico en un iPhone.
+      #
+      # Solución: los assets llevan el SHA en el nombre, así que son
+      # inmutables y una versión vieja nunca puede mezclarse con una nueva.
+      # index.html sigue con sus 10 minutos de caché (eso no se puede tocar),
+      # pero como apunta a rutas nuevas, en cuanto llega arrastra el resto.
+      #
+      # El motor deriva en tiempo de ejecución las rutas de .wasm, .pck y los
+      # audio worklets a partir de GODOT_CONFIG.executable, y esos worklets no
+      # aparecen en index.html; por eso hay que renombrar TODOS los index.* y
+      # reescribir también `executable`, no sólo las referencias visibles.
+      - name: Cache-busting (assets con el SHA en el nombre)
+        run: |
+          set -euo pipefail
+          cd build/web
+          for f in index.*; do
+            if [ "$f" != "index.html" ]; then
+              mv "$f" "index.${SHA_SHORT}.${f#index.}"
+            fi
+          done
+          # El orden importa: primero las referencias con punto, y sólo
+          # despues `executable`, que no lo lleva. Al reves, el segundo sed
+          # volveria a pisar lo que acaba de escribir el primero en la misma
+          # linea y saldria index.<sha>.<sha>.
+          sed -i \
+            -e "s|index\.|index.${SHA_SHORT}.|g" \
+            -e "s|\"executable\":\"index\"|\"executable\":\"index.${SHA_SHORT}\"|" \
+            index.html
+          echo "--- referencias en index.html ---"
+          grep -o "index\.[A-Za-z0-9.]*" index.html | sort -u
+          echo "--- archivos ---"
+          ls -la
+
+      - name: Add .nojekyll
         run: |
           touch build/web/.nojekyll
 
