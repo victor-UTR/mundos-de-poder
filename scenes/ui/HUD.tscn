@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://b0mdp1hud000"]
+[gd_scene load_steps=4 format=3 uid="uid://b0mdp1hud000"]
 
 [ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Inventory.tscn" id="2_inv"]
+[ext_resource type="PackedScene" path="res://scenes/ui/TouchControls.tscn" id="3_touch"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -166,3 +167,5 @@ theme_override_colors/font_color = Color(1, 1, 0.55, 1)
 theme_override_font_sizes/font_size = 20
 
 [node name="Inventory" parent="Root" instance=ExtResource("2_inv")]
+
+[node name="TouchControls" parent="Root" instance=ExtResource("3_touch")]

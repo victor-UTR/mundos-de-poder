@@ -1,0 +1,151 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/TouchControls.gd" id="1_touch"]
+
+[node name="TouchControls" type="Control"]
+process_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_touch")
+
+[node name="Left" type="Panel" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -66.0
+offset_right = 66.0
+offset_bottom = -14.0
+mouse_filter = 2
+self_modulate = Color(0.55, 0.7, 0.95, 1)
+
+[node name="Label" type="Label" parent="Left"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "<"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="Right" type="Panel" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 74.0
+offset_top = -66.0
+offset_right = 126.0
+offset_bottom = -14.0
+mouse_filter = 2
+self_modulate = Color(0.55, 0.7, 0.95, 1)
+
+[node name="Label" type="Label" parent="Right"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = ">"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="Jump" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -66.0
+offset_top = -66.0
+offset_right = -14.0
+offset_bottom = -14.0
+mouse_filter = 2
+self_modulate = Color(0.5, 0.9, 0.6, 1)
+
+[node name="Label" type="Label" parent="Jump"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "Salto"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="Attack" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -126.0
+offset_top = -66.0
+offset_right = -74.0
+offset_bottom = -14.0
+mouse_filter = 2
+self_modulate = Color(0.95, 0.55, 0.5, 1)
+
+[node name="Label" type="Label" parent="Attack"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "Golpe"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="Power" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -126.0
+offset_top = -124.0
+offset_right = -74.0
+offset_bottom = -72.0
+mouse_filter = 2
+self_modulate = Color(0.95, 0.85, 0.4, 1)
+
+[node name="Label" type="Label" parent="Power"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "Poder"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="Interact" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -66.0
+offset_top = -124.0
+offset_right = -14.0
+offset_bottom = -72.0
+mouse_filter = 2
+self_modulate = Color(0.7, 0.65, 0.95, 1)
+
+[node name="Label" type="Label" parent="Interact"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "Usar"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="Inventory" type="Panel" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -46.0
+offset_top = 36.0
+offset_right = -8.0
+offset_bottom = 68.0
+mouse_filter = 2
+self_modulate = Color(0.8, 0.8, 0.85, 1)
+
+[node name="Label" type="Label" parent="Inventory"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+text = "Mochila"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 9

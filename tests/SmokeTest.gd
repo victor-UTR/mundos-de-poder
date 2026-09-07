@@ -62,6 +62,9 @@ func _ready() -> void:
 	# 4) La vista de mochila lista los 3 poderes y pausa el juego.
 	await _check_inventory()
 
+	# 4b) Los controles táctiles: geometría y multitáctil.
+	await _check_touch_controls()
+
 	# 5) El puzzle final se puede resolver (y sólo usando los poderes).
 	await _check_puzzle()
 
@@ -211,6 +214,73 @@ func _check_inventory() -> void:
 	_ok(get_tree().paused, "Abrir la mochila no pausó el juego")
 	inv.close()
 	_ok(not get_tree().paused, "Cerrar la mochila no reanudó el juego")
+
+	remove_child(screen)
+	screen.queue_free()
+
+
+## Los botones en pantalla deben apuntar a acciones que existen, no pisarse
+## unos a otros y admitir varios dedos a la vez (moverse y saltar).
+func _check_touch_controls() -> void:
+	var packed: PackedScene = load("res://scenes/levels/Screen1.tscn")
+	LevelManager.pending_spawn = "start"
+	var screen: Node = packed.instantiate()
+	add_child(screen)
+	await get_tree().process_frame
+
+	var tc := screen.get_node_or_null("HUD/Root/TouchControls")
+	if tc == null:
+		_fail("El HUD no incluye los controles táctiles")
+		remove_child(screen)
+		screen.queue_free()
+		return
+
+	# En el runner no hay pantalla táctil, así que se fuerzan para poder
+	# medir la geometría real de los botones.
+	tc.set_controls_visible(true)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_ok(tc.visible, "Los controles táctiles no se muestran al activarlos")
+
+	# a) Cada botón existe, apunta a una acción real y cae dentro de la
+	#    pantalla; y pulsando en su centro se detecta ese botón.
+	var rects := {}
+	for node_name in tc.BUTTON_ACTIONS:
+		var action: String = tc.BUTTON_ACTIONS[node_name]
+		_ok(InputMap.has_action(action),
+			"El botón táctil '%s' usa la acción '%s', que no existe" % [node_name, action])
+		var b = tc.get_node_or_null(node_name)
+		if b == null:
+			_fail("Falta el botón táctil '%s'" % node_name)
+			continue
+		var r: Rect2 = b.get_global_rect()
+		rects[node_name] = r
+		_ok(r.size.x > 24 and r.size.y > 24,
+			"El botón '%s' mide %s: demasiado pequeño para un dedo" % [node_name, r.size])
+		_ok(tc._action_at(r.get_center()) == action,
+			"Pulsar en el centro de '%s' no dispara '%s'" % [node_name, action])
+
+	# b) Ningún botón puede solaparse con otro.
+	var names: Array = rects.keys()
+	for i in names.size():
+		for j in range(i + 1, names.size()):
+			var a: Rect2 = rects[names[i]]
+			var b2: Rect2 = rects[names[j]]
+			_ok(not a.intersects(b2),
+				"Los botones '%s' y '%s' se solapan" % [names[i], names[j]])
+
+	# c) Multitáctil: dos dedos deben poder mantener dos acciones a la vez.
+	tc._press(0, "move_right")
+	tc._press(1, "jump")
+	_ok(Input.is_action_pressed("move_right") and Input.is_action_pressed("jump"),
+		"Dos dedos no mantienen dos acciones a la vez (no se podría correr y saltar)")
+	tc._release(0)
+	_ok(not Input.is_action_pressed("move_right"),
+		"Levantar el dedo no suelta la acción de movimiento")
+	_ok(Input.is_action_pressed("jump"),
+		"Levantar un dedo soltó la acción del otro")
+	tc._release_all()
+	_ok(not Input.is_action_pressed("jump"), "_release_all no soltó todas las acciones")
 
 	remove_child(screen)
 	screen.queue_free()

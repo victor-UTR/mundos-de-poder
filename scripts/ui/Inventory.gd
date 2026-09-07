@@ -20,23 +20,24 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("inventory"):
+## Se consulta el estado de las acciones en vez de escuchar eventos: los
+## botones táctiles usan Input.action_press(), que cambia el estado pero no
+## genera un InputEvent que recorra el árbol, así que con _unhandled_input
+## la mochila no se abriría desde el móvil.
+func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("inventory"):
 		toggle()
-		get_viewport().set_input_as_handled()
 		return
 	if not is_open:
 		return
-	if event.is_action_pressed("ui_cancel"):
+	if Input.is_action_just_pressed("ui_cancel"):
 		close()
-		get_viewport().set_input_as_handled()
 		return
-	# Cambiar de poder desde la mochila. El Player está pausado, así que no
-	# puede atender él estas teclas.
+	# Cambiar de poder desde la mochila. El juego está pausado, así que el
+	# Player no puede atender él estas teclas.
 	for slot in 3:
-		if event.is_action_pressed("power_%d" % (slot + 1)):
+		if Input.is_action_just_pressed("power_%d" % (slot + 1)):
 			_select(slot)
-			get_viewport().set_input_as_handled()
 			return
 
 

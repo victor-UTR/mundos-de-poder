@@ -117,6 +117,23 @@ func show_message(msg: String) -> void:
 	_toast(msg)
 
 
+## Con los controles táctiles en pantalla, la franja inferior izquierda la
+## ocupan los botones de movimiento, así que el indicador de poder se sube
+## debajo de las vidas.
+func set_touch_mode(on: bool) -> void:
+	var bottom_left: Control = $Root/BottomLeft
+	if on:
+		bottom_left.anchor_top = 0.0
+		bottom_left.anchor_bottom = 0.0
+		bottom_left.offset_top = 66.0
+		bottom_left.offset_bottom = 86.0
+	else:
+		bottom_left.anchor_top = 1.0
+		bottom_left.anchor_bottom = 1.0
+		bottom_left.offset_top = -28.0
+		bottom_left.offset_bottom = -8.0
+
+
 func _toast(msg: String) -> void:
 	# Ahora los avisos son mucho más frecuentes, así que hay que cancelar el
 	# anterior: si no, dos tweens sobre el mismo Label se pisan y el texto

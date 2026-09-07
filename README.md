@@ -19,8 +19,15 @@ Publicado en GitHub Pages: `https://victor-utr.github.io/mundos-de-poder/`
 - `I`: abrir la mochila (pausa el juego)
 - `E`: interactuar
 
+**Móvil / tablet**: los controles en pantalla aparecen solos si el
+dispositivo es táctil. Movimiento abajo a la izquierda; Salto, Golpe,
+Poder y Usar abajo a la derecha; Mochila arriba a la derecha. Admiten
+varios dedos a la vez, así que se puede correr y saltar a la vez, y se
+puede deslizar de `<` a `>` sin levantar el dedo.
+
 Atajos de depuración: `F10` reinicia la partida, `F11` borra el guardado,
-`F12` vuelca el estado por consola.
+`F12` vuelca el estado por consola, `F9` enseña u oculta los controles
+táctiles (para ajustarlos desde el escritorio).
 
 ## Desarrollo local
 
