@@ -111,10 +111,10 @@ func stun(duration: float = 2.0) -> void:
 # --- Presentación ----------------------------------------------------------
 func _refresh_visuals() -> void:
 	if is_off:
-		body_rect.color = Color(0.25, 0.4, 0.3)
-		light.color = Color(0.4, 0.95, 0.5)
+		body_rect.color = Palette.SERVER_BODY_OFF
+		light.color = Palette.SERVER_LIGHT_READY
 		return
-	body_rect.color = Color(0.35, 0.2, 0.24)
+	body_rect.color = Palette.SERVER_BODY
 	# La luz avisa de si ahora mismo se puede actuar: verde = adelante.
 	var now := Time.get_ticks_msec() / 1000.0
 	var ready_now := false
@@ -125,7 +125,7 @@ func _refresh_visuals() -> void:
 			ready_now = now < _stunned_until
 		GameState.Power.SHIELD:
 			ready_now = _player != null and _player.shield_charges > 0
-	light.color = Color(0.4, 0.95, 0.5) if ready_now else Color(0.95, 0.3, 0.3)
+	light.color = Palette.SERVER_LIGHT_READY if ready_now else Palette.SERVER_LIGHT_LOCKED
 
 
 func _requirement_hint() -> String:

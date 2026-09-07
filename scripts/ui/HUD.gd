@@ -55,17 +55,17 @@ func _refresh_slots(active_power: int) -> void:
 		var power_id := i + 1
 		var base: Color = GameState.power_color(power_id)
 		if not GameState.has_power(power_id):
-			slot.color = Color(0.22, 0.22, 0.26)
+			slot.color = Palette.UI_SLOT
 		elif power_id == active_power:
 			slot.color = base
 		else:
-			slot.color = Color(base.r, base.g, base.b, 0.4)
+			slot.color = Palette.alpha(base, 0.4)
 
 
 func _on_lives_changed(n: int) -> void:
 	for i in life_boxes.get_child_count():
 		var box: ColorRect = life_boxes.get_child(i)
-		box.color = Color(0.95, 0.3, 0.3) if i < n else Color(0.25, 0.25, 0.28)
+		box.color = Palette.UI_LIFE if i < n else Palette.UI_SLOT
 
 
 func _on_score_changed(s: int) -> void:
@@ -76,7 +76,7 @@ func _on_active_power_changed(power_id: int) -> void:
 	_refresh_slots(power_id)
 	if power_id == -1:
 		power_label.text = "Sin poderes — derrota robots para conseguirlos"
-		power_dot.color = Color(0.3, 0.3, 0.35)
+		power_dot.color = Palette.UI_INACTIVE
 		return
 	var info: Dictionary = GameState.POWER_INFO.get(power_id, {"name": "?"})
 	power_label.text = "Poder: %s (%d/3)   Q usar · TAB cambiar" % [
@@ -105,7 +105,7 @@ func _on_hits_before_life_changed(remaining: int) -> void:
 	# Rellena los pips de golpes restantes hasta perder vida.
 	for i in hit_pips.get_child_count():
 		var pip: ColorRect = hit_pips.get_child(i)
-		pip.color = Color(1, 0.9, 0.3) if i < remaining else Color(0.3, 0.3, 0.35)
+		pip.color = Palette.UI_PIP if i < remaining else Palette.UI_INACTIVE
 
 
 var _toast_tween: Tween

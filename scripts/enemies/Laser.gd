@@ -12,6 +12,10 @@ var _traveled: float = 0.0
 
 
 func _ready() -> void:
+	# El color del .tscn es sólo vista previa del editor; manda Palette.
+	var sprite := get_node_or_null("Sprite")
+	if sprite is ColorRect:
+		sprite.color = Palette.LASER
 	body_entered.connect(_on_body_entered)
 
 

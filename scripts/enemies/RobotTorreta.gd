@@ -18,6 +18,12 @@ func _ready() -> void:
 	_fire_at = Time.get_ticks_msec() / 1000.0 + fire_interval
 
 
+func _apply_palette() -> void:
+	_tint("Sprite", Palette.ENEMY_TURRET)
+	_tint("Barrel", Palette.ENEMY_TURRET_BARREL)
+	_tint("Base", Palette.ENEMY_TURRET_BASE)
+
+
 func _ai_tick(_delta: float) -> void:
 	# Estática: nunca se mueve horizontalmente.
 	velocity.x = 0.0
@@ -50,4 +56,4 @@ func _shoot_at(target: Vector2) -> void:
 	get_parent().add_child(laser)
 	Audio.play("laser")
 	# Fogonazo del cañón: parpadeo blanco corto.
-	_flash(Color(1, 1, 0.8))
+	_flash(Palette.FLASH_CHARGE)
