@@ -19,7 +19,7 @@ offset_top = -40.0
 offset_right = 12.0
 offset_bottom = 40.0
 mouse_filter = 2
-color = Color(0.35, 0.5, 0.75, 0.35)
+color = Color(0.35, 0.52, 0.78, 0.35)
 
 [node name="Glow" type="ColorRect" parent="."]
 offset_left = -6.0
@@ -27,4 +27,4 @@ offset_top = -32.0
 offset_right = 6.0
 offset_bottom = 40.0
 mouse_filter = 2
-color = Color(0.6, 0.85, 1, 0.25)
+color = Color(0.55, 0.82, 1, 0.25)

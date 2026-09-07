@@ -26,18 +26,18 @@ offset_left = -14.0
 offset_top = -13.0
 offset_right = 14.0
 offset_bottom = 13.0
-color = Color(0.35, 0.35, 0.42, 1)
+color = Color(0.360784, 0.392157, 0.470588, 1)
 
 [node name="Barrel" type="ColorRect" parent="."]
 offset_left = -14.0
 offset_top = -3.0
 offset_right = 14.0
 offset_bottom = 3.0
-color = Color(0.7, 0.15, 0.15, 1)
+color = Color(0.701961, 0.176471, 0.176471, 1)
 
 [node name="Base" type="ColorRect" parent="."]
 offset_left = -16.0
 offset_top = 10.0
 offset_right = 16.0
 offset_bottom = 15.0
-color = Color(0.2, 0.2, 0.24, 1)
+color = Color(0.207843, 0.231373, 0.290196, 1)
